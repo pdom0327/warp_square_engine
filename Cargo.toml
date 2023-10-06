@@ -1,0 +1,12 @@
+[package]
+name = "warp_square_engine"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [
+    "python",
+    "java",
+]
+
+[dependencies]
