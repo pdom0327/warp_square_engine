@@ -5,9 +5,9 @@ edition.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-# [lib]
-# name = "warp_square_engine"
-# crate-type = ["cdylib"]
+[lib]
+name = "engine_java"
+crate-type = ["cdylib"]
 
 [dependencies]
 log = "0.4.20"

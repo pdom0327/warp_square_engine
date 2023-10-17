@@ -16,12 +16,12 @@ fn main() {
         .join("java")
         .join("club")
         .join("gamza")
-        .join("warp_square")
+        .join("warpsquare")
         .join("engine"),
-        "club.gamza.warp_square.engine".into(),
+        "club.gamza.warpsquare.engine".into(),
     );
 
-    let in_src = Path::new("src").join("java_glue.rs.in");
+    let in_src = Path::new("src").join("java_glue.in.rs");
     let out_dir = env::var("OUT_DIR").unwrap();
     let out_src = Path::new(&out_dir).join("java_glue.rs");
     let flap_gen =
