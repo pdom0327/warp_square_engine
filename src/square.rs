@@ -1,6 +1,8 @@
 use bitflags::bitflags;
 use std::mem::transmute;
 
+use crate::board_set::BoardSet;
+
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Hash)]
 pub enum Rank {
     Zero,
@@ -53,6 +55,25 @@ impl File {
     }
 }
 
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Hash)]
+pub enum Level {
+    White,
+    Neutral,
+    Black,
+    QL1,
+    QL2,
+    QL3,
+    QL4,
+    QL5,
+    QL6,
+    KL1,
+    KL2,
+    KL3,
+    KL4,
+    KL5,
+    KL6,
+}
+
 bitflags! {
     #[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Hash)]
     pub struct BitLevel: u16 {
@@ -73,23 +94,41 @@ bitflags! {
         const KL6 = 1 << 14;
     }
 
-    #[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Hash)]
+    #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
     pub struct BitBoard: u64 {
+        const Empty = 0;
+
+        /// a1
         const W0 = 1;
+        /// b1
         const W1 = 1 << 1;
+        /// c1
         const W2 = 1 << 2;
+        /// d1
         const W3 = 1 << 3;
+        /// a2
         const W4 = 1 << 4;
+        /// b2
         const W5 = 1 << 5;
+        /// c2
         const W6 = 1 << 6;
+        /// d2
         const W7 = 1 << 7;
+        /// a3
         const W8 = 1 << 8;
+        /// b3
         const W9 = 1 << 9;
+        /// c3
         const WA = 1 << 10;
+        /// d3
         const WB = 1 << 11;
+        /// a4
         const WC = 1 << 12;
+        /// b4
         const WD = 1 << 13;
+        /// c4
         const WE = 1 << 14;
+        /// d4
         const WF = 1 << 15;
 
         const W = Self::W0.bits() | Self::W1.bits() | Self::W2.bits() | Self::W3.bits() |
@@ -172,18 +211,6 @@ bitflags! {
 }
 
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Hash)]
-pub struct Level {
-    id: BitLevel,
-    board: BitBoard,
-}
-
-impl Level {
-    const fn new(id: BitLevel, board: BitBoard) -> Self {
-        Level { id, board }
-    }
-}
-
-#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Hash)]
 pub enum Color {
     White,
     Black,
@@ -199,6 +226,13 @@ pub struct Square {
 impl Square {
     pub fn new(rank: Rank, file: File, level: Level) -> Square {
         Square { rank, file, level }
+    }
+
+    pub fn to_bit_board(&self, board_set: BoardSet) -> BitBoard {
+        // if self.level as i8 <= Level::Black as i8 {
+            
+        // }
+        todo!()
     }
 
     pub fn down(&self) -> Vec<Self> {
