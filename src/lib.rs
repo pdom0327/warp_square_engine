@@ -1,6 +1,6 @@
-mod bit_board;
-mod color_mask;
-mod game;
-mod piece;
-mod piece_move;
-mod square;
+pub mod bit_board;
+pub mod color_mask;
+pub mod game;
+pub mod piece;
+pub mod piece_move;
+pub mod square;

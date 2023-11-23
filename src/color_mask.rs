@@ -1,16 +1,45 @@
-// use std::ops::Index;
+use std::ops::{Index, BitOr};
 
-// use crate::square::{BitBoard, Color};
+use crate::{square::Color, bit_board::{BitBoardSet, BitBoard}};
 
-// pub struct ColorMask(pub BitBoard, pub BitBoard);
+#[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
+pub struct ColorMask {
+    raw: [BitBoardSet; 2],
+}
 
-// impl Index<Color> for ColorMask {
-//     type Output = BitBoard;
+impl ColorMask {
+    pub fn new() -> Self {
+        Self {
+            raw: [BitBoardSet::new(), BitBoardSet::new()],
+        }
+    }
 
-//     fn index(&self, index: Color) -> &Self::Output {
-//         match index {
-//             Color::White => &self.0,
-//             Color::Black => &self.1,
-//         }
-//     }
-// }
+    pub fn combine(&self) -> BitBoard {
+        self.raw.iter().fold(BitBoard::Empty, |acc, x| acc | x.combine())
+    }
+}
+
+impl Index<Color> for ColorMask {
+    type Output = BitBoardSet;
+
+    fn index(&self, index: Color) -> &Self::Output {
+        &self.raw[index as usize]
+    }
+}
+
+impl BitOr<Self> for ColorMask {
+    type Output = BitBoard;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        self.combine() | rhs.combine()
+    }
+}
+
+
+impl BitOr<&Self> for ColorMask {
+    type Output = BitBoard;
+
+    fn bitor(self, rhs: &Self) -> Self::Output {
+        self.combine() | rhs.combine()
+    }
+}

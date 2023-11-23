@@ -1,163 +1,123 @@
-use std::collections::{HashMap, HashSet};
-
 use crate::{
     piece::Piece,
     // color_mask::ColorMask,
     piece_move::PieceMove,
-    square::{Color, File, Level, Rank, Square},
+    square::{Color, Level, Rank, Square}, color_mask::ColorMask, bit_board::{BitBoardSet, BitBoard, BoardType},
 };
 
-// const DEFAULT_SET: [(BitBoard, (Piece, Color)); 32] = [
-//     (BitBoard::QW0, (Piece::Rook, Color::White)),
-//     (BitBoard::QW1, (Piece::Queen, Color::White)),
-//     (BitBoard::QW2, (Piece::Pawn, Color::White)),
-//     (BitBoard::QW3, (Piece::Pawn, Color::White)),
-//     (BitBoard::W0, (Piece::Knight, Color::White)),
-//     (BitBoard::W1, (Piece::Bishop, Color::White)),
-//     (BitBoard::W2, (Piece::Bishop, Color::White)),
-//     (BitBoard::W3, (Piece::Knight, Color::White)),
-//     (BitBoard::W4, (Piece::Pawn, Color::White)),
-//     (BitBoard::W5, (Piece::Pawn, Color::White)),
-//     (BitBoard::W6, (Piece::Pawn, Color::White)),
-//     (BitBoard::W7, (Piece::Pawn, Color::White)),
-//     (BitBoard::KW0, (Piece::King, Color::White)),
-//     (BitBoard::KW1, (Piece::Rook, Color::White)),
-//     (BitBoard::KW2, (Piece::Pawn, Color::White)),
-//     (BitBoard::KW3, (Piece::Pawn, Color::White)),
-//     (BitBoard::QB0, (Piece::Pawn, Color::Black)),
-//     (BitBoard::QB1, (Piece::Pawn, Color::Black)),
-//     (BitBoard::QB2, (Piece::Rook, Color::Black)),
-//     (BitBoard::QB3, (Piece::Queen, Color::Black)),
-//     (BitBoard::B8, (Piece::Pawn, Color::Black)),
-//     (BitBoard::B9, (Piece::Pawn, Color::Black)),
-//     (BitBoard::BA, (Piece::Pawn, Color::Black)),
-//     (BitBoard::BB, (Piece::Pawn, Color::Black)),
-//     (BitBoard::BC, (Piece::Knight, Color::Black)),
-//     (BitBoard::BD, (Piece::Bishop, Color::Black)),
-//     (BitBoard::BE, (Piece::Bishop, Color::Black)),
-//     (BitBoard::BF, (Piece::King, Color::Black)),
-//     (BitBoard::KB0, (Piece::Pawn, Color::Black)),
-//     (BitBoard::KB1, (Piece::Pawn, Color::Black)),
-//     (BitBoard::KB2, (Piece::King, Color::Black)),
-//     (BitBoard::KB3, (Piece::Rook, Color::Black)),
-// ];
-
-pub struct GameSnapshot {
-    pub turn: Color,
-    // occupied_mask: ColorMask,
-    pub pieces: HashMap<Square, Piece>,
+pub struct BoardSnapshot {
+    pub occupied_mask: ColorMask,
+    pub pawns: BitBoardSet,
+    pub knights: BitBoardSet,
+    pub bishops: BitBoardSet,
+    pub rooks: BitBoardSet,
+    pub queens: BitBoardSet,
+    pub kings: BitBoardSet,
 }
 
-impl GameSnapshot {
-    fn new(turn: Color, pieces: HashMap<Square, Piece>) -> Self {
-        Self { turn, pieces }
+impl BoardSnapshot {
+    pub fn new(board: &Board) -> Self {
+        Self {
+            occupied_mask: board.occupied_mask.clone(),
+            pawns: board.pawns.clone(),
+            knights: board.knights.clone(),
+            bishops: board.bishops.clone(),
+            rooks: board.rooks.clone(),
+            queens: board.queens.clone(),
+            kings: board.kings.clone(),
+        }
     }
 
-    fn restore(&self, board_set: &mut Game) {
-        board_set.turn = self.turn;
-        board_set.pieces = self.pieces.clone();
+    pub fn restore(&self, board: &mut Board) {
+        board.occupied_mask = self.occupied_mask;
+        board.pawns = self.pawns;
+        board.knights = self.knights;
+        board.bishops = self.bishops;
+        board.rooks = self.rooks;
+        board.queens = self.queens;
+        board.kings = self.kings;
+    }
+}
+
+pub struct Board {
+    occupied_mask: ColorMask,
+    pawns: BitBoardSet,
+    knights: BitBoardSet,
+    bishops: BitBoardSet,
+    rooks: BitBoardSet,
+    queens: BitBoardSet,
+    kings: BitBoardSet,
+}
+
+impl Board {
+    pub fn new() -> Self {
+        Self {
+            occupied_mask: ColorMask::new(),
+            pawns: BitBoardSet::new(),
+            knights: BitBoardSet::new(),
+            bishops: BitBoardSet::new(),
+            rooks: BitBoardSet::new(),
+            queens: BitBoardSet::new(),
+            kings: BitBoardSet::new(),
+        }
+    }
+
+    pub fn set_piece(&mut self, square: &Square, piece: Piece, color: Color) {
+        let board_type = match square {
+            Square { level: Level::White, .. } => BoardType::White,
+            Square { level: Level::Neutral, .. } => BoardType::Neutral,
+            Square { level: Level::Black, .. } => BoardType::Black,
+            _ => BoardType::Attack
+        };
+
+        let bit_square = BitBoard::from_square(square);
+
+        let bit_board = match piece {
+            Piece::Pawn => self.pawns[board_type],
+            Piece::Knight => self.knights[board_type],
+            Piece::Bishop => self.bishops[board_type],
+            Piece::Rook => self.rooks[board_type],
+            Piece::Queen => self.queens[board_type],
+            Piece::King => self.kings[board_type],
+        };
+
+        self.occupied_mask[color][board_type] |= bit_square;
     }
 }
 
 pub struct Game {
-    move_stack: Vec<(PieceMove, GameSnapshot)>,
     turn: Color,
-    // occupied_mask: ColorMask,
-    pieces: HashMap<Square, Piece>,
+    board: Board,
+    move_stack: Vec<(PieceMove, BoardSnapshot)>,
 }
 
 impl Game {
-    const WHITE_SET: [(Rank, File); 16] = [
-        (Rank::One, File::A),
-        (Rank::Two, File::A),
-        (Rank::Three, File::A),
-        (Rank::Four, File::A),
-        (Rank::One, File::B),
-        (Rank::Two, File::B),
-        (Rank::Three, File::B),
-        (Rank::Four, File::B),
-        (Rank::One, File::C),
-        (Rank::Two, File::C),
-        (Rank::Three, File::C),
-        (Rank::Four, File::C),
-        (Rank::One, File::D),
-        (Rank::Two, File::D),
-        (Rank::Three, File::D),
-        (Rank::Four, File::D),
-    ];
-
-    const NEUTRAL_SET: [(Rank, File); 16] = [
-        (Rank::Three, File::A),
-        (Rank::Four, File::A),
-        (Rank::Five, File::A),
-        (Rank::Six, File::A),
-        (Rank::Three, File::B),
-        (Rank::Four, File::B),
-        (Rank::Five, File::B),
-        (Rank::Six, File::B),
-        (Rank::Three, File::C),
-        (Rank::Four, File::C),
-        (Rank::Five, File::C),
-        (Rank::Six, File::C),
-        (Rank::Three, File::D),
-        (Rank::Four, File::D),
-        (Rank::Five, File::D),
-        (Rank::Six, File::D),
-    ];
-
-    const BLACK_SET: [(Rank, File); 16] = [
-        (Rank::Five, File::A),
-        (Rank::Six, File::A),
-        (Rank::Seven, File::A),
-        (Rank::Eight, File::A),
-        (Rank::Five, File::B),
-        (Rank::Six, File::B),
-        (Rank::Seven, File::B),
-        (Rank::Eight, File::B),
-        (Rank::Five, File::C),
-        (Rank::Six, File::C),
-        (Rank::Seven, File::C),
-        (Rank::Eight, File::C),
-        (Rank::Five, File::D),
-        (Rank::Six, File::D),
-        (Rank::Seven, File::D),
-        (Rank::Eight, File::D),
-    ];
-
     pub fn new() -> Self {
-        Self {
-            move_stack: Vec::new(),
+        let mut game = Self {
             turn: Color::White,
-            // occupied_mask: ColorMask(BitBoard::Empty, BitBoard::Empty),
-            pieces: HashMap::new(),
-        }
-    }
+            board: Board::new(),
+            move_stack: Vec::new(),
+        };
 
-    fn add_piece(&mut self, square: &Square, piece: Piece) -> Option<Piece> {
-        self.pieces.insert(square.clone(), piece)
-    }
+        todo!();
 
-    fn remove_piece(&mut self, square: &Square) -> Option<Piece> {
-        self.pieces.remove(square)
+        game
     }
 
     fn pass_turn(&mut self) {
-        if self.turn == Color::White {
-            self.turn = Color::Black;
-        } else {
-            self.turn = Color::White;
-        }
+        self.turn != self.turn;
     }
 
-    pub fn legal() {}
+    pub fn legal_move(&self, piece_move: PieceMove) -> bool {
+        todo!()
+    }
 
     pub fn push_move(&mut self, piece_move: PieceMove) -> Result<Option<Piece>, ()> {
-        let snapshot = GameSnapshot::new(self.turn, self.pieces.clone());
+        let snapshot = BoardSnapshot::new(&self.board);
 
-        let captured_piece = match self.pieces.get(&piece_move.source) {
+        let captured_piece = match self.pieces.remove(&piece_move.source) {
             Some(piece) => {
-                self.remove_piece(&piece_move.source);
-                self.add_piece(&piece_move.destination, *piece)
+                self.pieces.insert(piece_move.destination.clone(), piece)
             }
             None => return Err(()),
         };
@@ -185,6 +145,50 @@ impl Game {
             Level::Neutral => Self::NEUTRAL_SET.contains(&(square.rank, square.file)),
             Level::Black => Self::BLACK_SET.contains(&(square.rank, square.file)),
             _ => false,
+        }
+    }
+
+    pub fn print(&self) {
+        println!("White Board: ");
+        for (rank, file) in Self::WHITE_SET {
+            let square = Square::new(rank, file, Level::White);
+
+            match self.pieces.get(&square) {
+                Some(piece) => print!("{} ", piece),
+                None => print!(". "),
+            }
+
+            if rank == Rank::Four {
+                println!();
+            }
+        }
+
+        println!("Neutral Board: ");
+        for (rank, file) in Self::NEUTRAL_SET {
+            let square = Square::new(rank, file, Level::Neutral);
+
+            match self.pieces.get(&square) {
+                Some(piece) => print!("{} ", piece),
+                None => print!(". "),
+            }
+
+            if rank == Rank::Six {
+                println!();
+            }
+        }
+
+        println!("Black Board: ");
+        for (rank, file) in Self::BLACK_SET {
+            let square = Square::new(rank, file, Level::Black);
+
+            match self.pieces.get(&square) {
+                Some(piece) => print!("{} ", piece.get_char(color)),
+                None => print!(". "),
+            }
+
+            if rank == Rank::Eight {
+                println!();
+            }
         }
     }
 }

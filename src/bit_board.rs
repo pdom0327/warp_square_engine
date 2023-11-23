@@ -1,137 +1,191 @@
+use std::ops::{BitOr, Index};
+
 use bitflags::bitflags;
 
-bitflags! {
-    #[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Hash)]
-    pub struct BitLevel: u16 {
-        const White = 1;
-        const Neutral = 1 << 1;
-        const Black = 1 << 2;
-        const QL1 = 1 << 3;
-        const QL2 = 1 << 4;
-        const QL3 = 1 << 5;
-        const QL4 = 1 << 6;
-        const QL5 = 1 << 7;
-        const QL6 = 1 << 8;
-        const KL1 = 1 << 9;
-        const KL2 = 1 << 10;
-        const KL3 = 1 << 11;
-        const KL4 = 1 << 12;
-        const KL5 = 1 << 13;
-        const KL6 = 1 << 14;
-    }
+use crate::square::Square;
 
-    #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
+bitflags! {
+    #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
     pub struct BitBoard: u64 {
         const Empty = 0;
+        const Z0 = 1;
+        const Z1 = 1 << 1;
+        const Z2 = 1 << 2;
+        const Z3 = 1 << 3;
+        const Z4 = 1 << 4;
+        const Z5 = 1 << 5;
+        const Z6 = 1 << 6;
+        const Z7 = 1 << 7;
+        const Z8 = 1 << 8;
+        const Z9 = 1 << 9;
+        const A0 = 1 << 10;
+        const A1 = 1 << 11;
+        const A2 = 1 << 12;
+        const A3 = 1 << 13;
+        const A4 = 1 << 14;
+        const A5 = 1 << 15;
+        const A6 = 1 << 16;
+        const A7 = 1 << 17;
+        const A8 = 1 << 18;
+        const A9 = 1 << 19;
+        const B0 = 1 << 20;
+        const B1 = 1 << 21;
+        const B2 = 1 << 22;
+        const B3 = 1 << 23;
+        const B4 = 1 << 24;
+        const B5 = 1 << 25;
+        const B6 = 1 << 26;
+        const B7 = 1 << 27;
+        const B8 = 1 << 28;
+        const B9 = 1 << 29;
+        const C0 = 1 << 30;
+        const C1 = 1 << 31;
+        const C2 = 1 << 32;
+        const C3 = 1 << 33;
+        const C4 = 1 << 34;
+        const C5 = 1 << 35;
+        const C6 = 1 << 36;
+        const C7 = 1 << 37;
+        const C8 = 1 << 38;
+        const C9 = 1 << 39;
+        const D0 = 1 << 40;
+        const D1 = 1 << 41;
+        const D2 = 1 << 42;
+        const D3 = 1 << 43;
+        const D4 = 1 << 44;
+        const D5 = 1 << 45;
+        const D6 = 1 << 46;
+        const D7 = 1 << 47;
+        const D8 = 1 << 48;
+        const D9 = 1 << 49;
+        const E0 = 1 << 50;
+        const E1 = 1 << 51;
+        const E2 = 1 << 52;
+        const E3 = 1 << 53;
+        const E4 = 1 << 54;
+        const E5 = 1 << 55;
+        const E6 = 1 << 56;
+        const E7 = 1 << 57;
+        const E8 = 1 << 58;
+        const E9 = 1 << 59;
 
-        /// a1
-        const W0 = 1;
-        /// b1
-        const W1 = 1 << 1;
-        /// c1
-        const W2 = 1 << 2;
-        /// d1
-        const W3 = 1 << 3;
-        /// a2
-        const W4 = 1 << 4;
-        /// b2
-        const W5 = 1 << 5;
-        /// c2
-        const W6 = 1 << 6;
-        /// d2
-        const W7 = 1 << 7;
-        /// a3
-        const W8 = 1 << 8;
-        /// b3
-        const W9 = 1 << 9;
-        /// c3
-        const WA = 1 << 10;
-        /// d3
-        const WB = 1 << 11;
-        /// a4
-        const WC = 1 << 12;
-        /// b4
-        const WD = 1 << 13;
-        /// c4
-        const WE = 1 << 14;
-        /// d4
-        const WF = 1 << 15;
+        const WHITE =   Self::A1.bits() | Self::A2.bits() | Self::A3.bits() | Self::A4.bits() |
+                        Self::B1.bits() | Self::B2.bits() | Self::B3.bits() | Self::B4.bits() |
+                        Self::C1.bits() | Self::C2.bits() | Self::C3.bits() | Self::C4.bits() |
+                        Self::D1.bits() | Self::D2.bits() | Self::D3.bits() | Self::D4.bits();
 
-        const W = Self::W0.bits() | Self::W1.bits() | Self::W2.bits() | Self::W3.bits() |
-                  Self::W4.bits() | Self::W5.bits() | Self::W6.bits() | Self::W7.bits() |
-                  Self::W8.bits() | Self::W9.bits() | Self::WA.bits() | Self::WB.bits() |
-                  Self::WC.bits() | Self::WD.bits() | Self::WE.bits() | Self::WF.bits();
+        const NEUTRAL = Self::A3.bits() | Self::A4.bits() | Self::A5.bits() | Self::A6.bits() |
+                        Self::B3.bits() | Self::B4.bits() | Self::B5.bits() | Self::B6.bits() |
+                        Self::C3.bits() | Self::C4.bits() | Self::C5.bits() | Self::C6.bits() |
+                        Self::D3.bits() | Self::D4.bits() | Self::D5.bits() | Self::D6.bits();
 
-        const N0 = 1 << 16;
-        const N1 = 1 << 17;
-        const N2 = 1 << 18;
-        const N3 = 1 << 19;
-        const N4 = 1 << 20;
-        const N5 = 1 << 21;
-        const N6 = 1 << 22;
-        const N7 = 1 << 23;
-        const N8 = 1 << 24;
-        const N9 = 1 << 25;
-        const NA = 1 << 26;
-        const NB = 1 << 27;
-        const NC = 1 << 28;
-        const ND = 1 << 29;
-        const NE = 1 << 30;
-        const NF = 1 << 31;
+        const BLACK =   Self::A5.bits() | Self::A6.bits() | Self::A7.bits() | Self::A8.bits() |
+                        Self::B5.bits() | Self::B6.bits() | Self::B7.bits() | Self::B8.bits() |
+                        Self::C5.bits() | Self::C6.bits() | Self::C7.bits() | Self::C8.bits() |
+                        Self::D5.bits() | Self::D6.bits() | Self::D7.bits() | Self::D8.bits();
 
-        const N = Self::N0.bits() | Self::N1.bits() | Self::N2.bits() | Self::N3.bits() |
-        Self::N4.bits() | Self::N5.bits() | Self::N6.bits() | Self::N7.bits() |
-        Self::N8.bits() | Self::N9.bits() | Self::NA.bits() | Self::NB.bits() |
-        Self::NC.bits() | Self::ND.bits() | Self::NE.bits() | Self::NF.bits();
+        const QL1 =     Self::Z0.bits() | Self::Z1.bits() |
+                        Self::A0.bits() | Self::A1.bits();
 
-        const B0 = 1 << 32;
-        const B1 = 1 << 33;
-        const B2 = 1 << 34;
-        const B3 = 1 << 35;
-        const B4 = 1 << 36;
-        const B5 = 1 << 37;
-        const B6 = 1 << 38;
-        const B7 = 1 << 39;
-        const B8 = 1 << 40;
-        const B9 = 1 << 41;
-        const BA = 1 << 42;
-        const BB = 1 << 43;
-        const BC = 1 << 44;
-        const BD = 1 << 45;
-        const BE = 1 << 46;
-        const BF = 1 << 47;
+        const QL2 =     Self::Z4.bits() | Self::Z5.bits() |
+                        Self::A4.bits() | Self::A5.bits();
 
-        const B = Self::B0.bits() | Self::B1.bits() | Self::B2.bits() | Self::B3.bits() |
-        Self::B4.bits() | Self::B5.bits() | Self::B6.bits() | Self::B7.bits() |
-        Self::B8.bits() | Self::B9.bits() | Self::BA.bits() | Self::BB.bits() |
-        Self::BC.bits() | Self::BD.bits() | Self::BE.bits() | Self::BF.bits();
+        const QL3 =     Self::Z2.bits() | Self::Z3.bits() |
+                        Self::A2.bits() | Self::A3.bits();
 
-        const QW0 = 1 << 48;
-        const QW1 = 1 << 49;
-        const QW2 = 1 << 50;
-        const QW3 = 1 << 51;
+        const QL4 =     Self::Z6.bits() | Self::Z7.bits() |
+                        Self::A6.bits() | Self::A7.bits();
 
-        const QW = Self::QW0.bits() | Self::QW1.bits() | Self::QW2.bits() | Self::QW3.bits();
+        const QL5 =     Self::Z4.bits() | Self::Z5.bits() |
+                        Self::A4.bits() | Self::A5.bits();
 
-        const KW0 = 1 << 52;
-        const KW1 = 1 << 53;
-        const KW2 = 1 << 54;
-        const KW3 = 1 << 55;
+        const QL6 =     Self::Z8.bits() | Self::Z9.bits() |
+                        Self::A8.bits() | Self::A9.bits();
 
-        const KW = Self::KW0.bits() | Self::KW1.bits() | Self::KW2.bits() | Self::KW3.bits();
+        const KL1 =     Self::D0.bits() | Self::D1.bits() |
+                        Self::E0.bits() | Self::E1.bits();
 
-        const QB0 = 1 << 56;
-        const QB1 = 1 << 57;
-        const QB2 = 1 << 58;
-        const QB3 = 1 << 59;
+        const KL2 =     Self::D4.bits() | Self::D5.bits() |
+                        Self::E4.bits() | Self::E5.bits();
 
-        const QB = Self::QB0.bits() | Self::QB1.bits() | Self::QB2.bits() | Self::QB3.bits();
+        const KL3 =     Self::D2.bits() | Self::D3.bits() |
+                        Self::E2.bits() | Self::E3.bits();
 
-        const KB0 = 1 << 60;
-        const KB1 = 1 << 61;
-        const KB2 = 1 << 62;
-        const KB3 = 1 << 63;
+        const KL4 =     Self::D6.bits() | Self::D7.bits() |
+                        Self::E6.bits() | Self::E7.bits();
 
-        const KB = Self::KB0.bits() | Self::KB1.bits() | Self::KB2.bits() | Self::KB3.bits();
+        const KL5 =     Self::D4.bits() | Self::D5.bits() |
+                        Self::E4.bits() | Self::E5.bits();
+
+        const KL6 =     Self::D8.bits() | Self::D9.bits() |
+                        Self::E8.bits() | Self::E9.bits();
+    }
+}
+
+impl BitBoard {
+    pub fn from_square(square: &Square) -> Self {
+        Self::from_bits_retain(square.rank as u64 * 10 + square.file as u64)
+    }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
+pub enum BoardType {
+    White,
+    Neutral,
+    Black,
+    Attack,
+}
+
+impl BoardType {
+    pub fn iter() -> impl Iterator<Item = Self> {
+        [
+            Self::White,
+            Self::Neutral,
+            Self::Black,
+            Self::Attack,
+        ]
+        .iter()
+        .copied()
+    }
+}
+
+#[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
+pub struct BitBoardSet {
+    raw: [BitBoard; 4],
+}
+
+impl BitBoardSet {
+    pub fn new() -> Self {
+        Self {
+            raw: [BitBoard::Empty; 4],
+        }
+    }
+
+    pub fn combine(&self) -> BitBoard {
+        self.raw.iter().fold(BitBoard::Empty, |acc, x| acc | *x)
+    }
+}
+
+impl Index<BoardType> for BitBoardSet {
+    type Output = BitBoard;
+
+    fn index(&self, index: BoardType) -> &Self::Output {
+        &self.raw[index as usize]
+    }
+}
+
+impl BitOr<Self> for BitBoardSet {
+    type Output = BitBoard;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        self.combine() | rhs.combine()
+    }
+}
+
+impl BitOr<&Self> for BitBoardSet {
+    type Output = BitBoard;
+
+    fn bitor(self, rhs: &Self) -> Self::Output {
+        self.combine() | rhs.combine()
     }
 }

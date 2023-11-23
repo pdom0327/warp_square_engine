@@ -89,26 +89,33 @@ impl Square {
         Square { rank, file, level }
     }
 
-    // pub fn to_bit_board(&self, board_set: BoardSet) -> BitBoard {
-    //     // if self.level as i8 <= Level::Black as i8 {
-
-    //     // }
-    //     todo!()
-    // }
-
-    pub fn down(&self) -> Vec<Self> {
-        [Self::new(self.rank.down(), self.file, self.level)].to_vec()
+    pub fn down(&self) -> Self {
+        Self::new(self.rank.down(), self.file, self.level)
     }
 
-    pub fn up(&self) -> Vec<Self> {
-        [Self::new(self.rank.up(), self.file, self.level)].to_vec()
+    pub fn up(&self) -> Self {
+        Self::new(self.rank.up(), self.file, self.level)
     }
 
-    pub fn left(&self) -> Vec<Self> {
-        [Self::new(self.rank, self.file.left(), self.level)].to_vec()
+    pub fn left(&self) -> Self {
+        Self::new(self.rank, self.file.left(), self.level)
     }
 
-    pub fn right(&self) -> Vec<Self> {
-        [Self::new(self.rank, self.file.right(), self.level)].to_vec()
+    pub fn right(&self) -> Self {
+        Self::new(self.rank, self.file.right(), self.level)
+    }
+
+    pub fn forward(&self, color: Color) -> Self {
+        match color {
+            Color::White => self.up(),
+            Color::Black => self.down(),
+        }
+    }
+
+    pub fn backward(&self, color: Color) -> Self {
+        match color {
+            Color::White => self.down(),
+            Color::Black => self.up(),
+        }
     }
 }
