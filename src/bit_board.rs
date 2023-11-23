@@ -2,12 +2,14 @@ use std::ops::{BitOr, Index};
 
 use bitflags::bitflags;
 
-use crate::square::Square;
+use crate::square::{Level, Rank, Square, NUM_RANKS, File};
+
+const LEVEL_SHIFT: usize = 60;
 
 bitflags! {
     #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
     pub struct BitBoard: u64 {
-        const Empty = 0;
+        const EMPTY = 0;
         const Z0 = 1;
         const Z1 = 1 << 1;
         const Z2 = 1 << 2;
@@ -69,62 +71,92 @@ bitflags! {
         const E8 = 1 << 58;
         const E9 = 1 << 59;
 
-        const WHITE =   Self::A1.bits() | Self::A2.bits() | Self::A3.bits() | Self::A4.bits() |
-                        Self::B1.bits() | Self::B2.bits() | Self::B3.bits() | Self::B4.bits() |
-                        Self::C1.bits() | Self::C2.bits() | Self::C3.bits() | Self::C4.bits() |
-                        Self::D1.bits() | Self::D2.bits() | Self::D3.bits() | Self::D4.bits();
+        const WHITE = 0b0001 << LEVEL_SHIFT;
+        const WHITE_SET =   Self::A1.bits() | Self::A2.bits() | Self::A3.bits() | Self::A4.bits() |
+                            Self::B1.bits() | Self::B2.bits() | Self::B3.bits() | Self::B4.bits() |
+                            Self::C1.bits() | Self::C2.bits() | Self::C3.bits() | Self::C4.bits() |
+                            Self::D1.bits() | Self::D2.bits() | Self::D3.bits() | Self::D4.bits();
 
-        const NEUTRAL = Self::A3.bits() | Self::A4.bits() | Self::A5.bits() | Self::A6.bits() |
-                        Self::B3.bits() | Self::B4.bits() | Self::B5.bits() | Self::B6.bits() |
-                        Self::C3.bits() | Self::C4.bits() | Self::C5.bits() | Self::C6.bits() |
-                        Self::D3.bits() | Self::D4.bits() | Self::D5.bits() | Self::D6.bits();
+        const NEUTRAL = 0b0010 << LEVEL_SHIFT;
+        const NEUTRAL_SET = Self::A3.bits() | Self::A4.bits() | Self::A5.bits() | Self::A6.bits() |
+                            Self::B3.bits() | Self::B4.bits() | Self::B5.bits() | Self::B6.bits() |
+                            Self::C3.bits() | Self::C4.bits() | Self::C5.bits() | Self::C6.bits() |
+                            Self::D3.bits() | Self::D4.bits() | Self::D5.bits() | Self::D6.bits();
 
-        const BLACK =   Self::A5.bits() | Self::A6.bits() | Self::A7.bits() | Self::A8.bits() |
-                        Self::B5.bits() | Self::B6.bits() | Self::B7.bits() | Self::B8.bits() |
-                        Self::C5.bits() | Self::C6.bits() | Self::C7.bits() | Self::C8.bits() |
-                        Self::D5.bits() | Self::D6.bits() | Self::D7.bits() | Self::D8.bits();
+        const BLACK = 0b0011 << LEVEL_SHIFT;
+        const BLACK_SET =   Self::A5.bits() | Self::A6.bits() | Self::A7.bits() | Self::A8.bits() |
+                            Self::B5.bits() | Self::B6.bits() | Self::B7.bits() | Self::B8.bits() |
+                            Self::C5.bits() | Self::C6.bits() | Self::C7.bits() | Self::C8.bits() |
+                            Self::D5.bits() | Self::D6.bits() | Self::D7.bits() | Self::D8.bits();
 
-        const QL1 =     Self::Z0.bits() | Self::Z1.bits() |
-                        Self::A0.bits() | Self::A1.bits();
+        const QL1 = 0b0100 << LEVEL_SHIFT;
+        const QL1_SET =     Self::Z0.bits() | Self::Z1.bits() |
+                            Self::A0.bits() | Self::A1.bits();
 
-        const QL2 =     Self::Z4.bits() | Self::Z5.bits() |
-                        Self::A4.bits() | Self::A5.bits();
+        const QL2 = 0b0101 << LEVEL_SHIFT;
+        const QL2_SET =     Self::Z4.bits() | Self::Z5.bits() |
+                            Self::A4.bits() | Self::A5.bits();
 
-        const QL3 =     Self::Z2.bits() | Self::Z3.bits() |
-                        Self::A2.bits() | Self::A3.bits();
+        const QL3 = 0b0110 << LEVEL_SHIFT;
+        const QL3_SET =     Self::Z2.bits() | Self::Z3.bits() |
+                            Self::A2.bits() | Self::A3.bits();
 
-        const QL4 =     Self::Z6.bits() | Self::Z7.bits() |
-                        Self::A6.bits() | Self::A7.bits();
+        const QL4 = 0b0111 << LEVEL_SHIFT;
+        const QL4_SET =     Self::Z6.bits() | Self::Z7.bits() |
+                            Self::A6.bits() | Self::A7.bits();
 
-        const QL5 =     Self::Z4.bits() | Self::Z5.bits() |
-                        Self::A4.bits() | Self::A5.bits();
+        const QL5 = 0b1000 << LEVEL_SHIFT;
+        const QL5_SET =     Self::Z4.bits() | Self::Z5.bits() |
+                            Self::A4.bits() | Self::A5.bits();
 
-        const QL6 =     Self::Z8.bits() | Self::Z9.bits() |
-                        Self::A8.bits() | Self::A9.bits();
+        const QL6 = 0b1001 << LEVEL_SHIFT;
+        const QL6_SET =     Self::Z8.bits() | Self::Z9.bits() |
+                            Self::A8.bits() | Self::A9.bits();
 
-        const KL1 =     Self::D0.bits() | Self::D1.bits() |
-                        Self::E0.bits() | Self::E1.bits();
+        const KL1 = 0b1010 << LEVEL_SHIFT;
+        const KL1_SET =     Self::D0.bits() | Self::D1.bits() |
+                            Self::E0.bits() | Self::E1.bits();
 
-        const KL2 =     Self::D4.bits() | Self::D5.bits() |
-                        Self::E4.bits() | Self::E5.bits();
+        const KL2 = 0b1011 << LEVEL_SHIFT;
+        const KL2_SET =     Self::D4.bits() | Self::D5.bits() |
+                            Self::E4.bits() | Self::E5.bits();
 
-        const KL3 =     Self::D2.bits() | Self::D3.bits() |
-                        Self::E2.bits() | Self::E3.bits();
+        const KL3 = 0b1100 << LEVEL_SHIFT;
+        const KL3_SET =     Self::D2.bits() | Self::D3.bits() |
+                            Self::E2.bits() | Self::E3.bits();
 
-        const KL4 =     Self::D6.bits() | Self::D7.bits() |
-                        Self::E6.bits() | Self::E7.bits();
+        const KL4 = 0b1101 << LEVEL_SHIFT;
+        const KL4_SET =     Self::D6.bits() | Self::D7.bits() |
+                            Self::E6.bits() | Self::E7.bits();
 
-        const KL5 =     Self::D4.bits() | Self::D5.bits() |
-                        Self::E4.bits() | Self::E5.bits();
+        const KL5 = 0b1110 << LEVEL_SHIFT;
+        const KL5_SET =     Self::D4.bits() | Self::D5.bits() |
+                            Self::E4.bits() | Self::E5.bits();
 
-        const KL6 =     Self::D8.bits() | Self::D9.bits() |
-                        Self::E8.bits() | Self::E9.bits();
+        const KL6 = 0b1111 << LEVEL_SHIFT;
+        const KL6_SET =     Self::D8.bits() | Self::D9.bits() |
+                            Self::E8.bits() | Self::E9.bits();
+
+        const LEVEL_MASK = 0b1111 << LEVEL_SHIFT;
     }
 }
 
 impl BitBoard {
     pub fn from_square(square: &Square) -> Self {
-        Self::from_bits_retain(square.rank as u64 * 10 + square.file as u64)
+        let shift = square.rank as u8 + square.file as u8 * NUM_RANKS;
+
+        Self::from_bits_retain(1 << shift)
+    }
+
+    pub fn into_square(&self) -> Square {
+        let bits = self.bits();
+        let shift = bits.trailing_zeros() as u8;
+
+        Square::new(
+            Rank::from_u8(shift / NUM_RANKS),
+            File::from_u8(shift % NUM_RANKS),
+            Level::from_u8((bits >> LEVEL_SHIFT) as u8),
+        )
     }
 }
 
@@ -138,14 +170,9 @@ pub enum BoardType {
 
 impl BoardType {
     pub fn iter() -> impl Iterator<Item = Self> {
-        [
-            Self::White,
-            Self::Neutral,
-            Self::Black,
-            Self::Attack,
-        ]
-        .iter()
-        .copied()
+        [Self::White, Self::Neutral, Self::Black, Self::Attack]
+            .iter()
+            .copied()
     }
 }
 
@@ -157,12 +184,12 @@ pub struct BitBoardSet {
 impl BitBoardSet {
     pub fn new() -> Self {
         Self {
-            raw: [BitBoard::Empty; 4],
+            raw: [BitBoard::EMPTY; 4],
         }
     }
 
-    pub fn combine(&self) -> BitBoard {
-        self.raw.iter().fold(BitBoard::Empty, |acc, x| acc | *x)
+    pub fn union(&self) -> BitBoard {
+        self.raw.iter().fold(BitBoard::EMPTY, |acc, x| acc | *x)
     }
 }
 
@@ -178,7 +205,7 @@ impl BitOr<Self> for BitBoardSet {
     type Output = BitBoard;
 
     fn bitor(self, rhs: Self) -> Self::Output {
-        self.combine() | rhs.combine()
+        self.union() | rhs.union()
     }
 }
 
@@ -186,6 +213,6 @@ impl BitOr<&Self> for BitBoardSet {
     type Output = BitBoard;
 
     fn bitor(self, rhs: &Self) -> Self::Output {
-        self.combine() | rhs.combine()
+        self.union() | rhs.union()
     }
 }

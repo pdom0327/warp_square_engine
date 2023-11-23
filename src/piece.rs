@@ -1,11 +1,11 @@
 use crate::{
     game::Game,
     piece_move::PieceMove,
-    square::{Color, Square},
+    square::{Color, Square}, bit_board::BitBoard,
 };
 
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
-pub enum Piece {
+pub enum PieceType {
     Pawn,
     Knight,
     Bishop,
@@ -16,13 +16,7 @@ pub enum Piece {
 
 pub const NUM_PIECES: usize = 6;
 
-// #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
-// pub struct Piece {
-//     pub piece_type: PieceType,
-//     pub color: Color,
-// }
-
-impl Piece {
+impl PieceType {
     pub fn compute_moves(&self, square: &Square, game: &Game) -> Vec<PieceMove> {
         match self {
             Self::Pawn => self.compute_pawn_moves(square, game),
@@ -82,4 +76,11 @@ impl Piece {
             },
         }
     }
+}
+
+#[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
+pub struct Piece {
+    pub piece_type: PieceType,
+    pub position: BitBoard,
+    pub attacks: BitBoard,
 }

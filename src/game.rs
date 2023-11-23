@@ -1,5 +1,5 @@
 use crate::{
-    piece::Piece,
+    piece::{PieceType, Piece},
     // color_mask::ColorMask,
     piece_move::PieceMove,
     square::{Color, Level, Rank, Square}, color_mask::ColorMask, bit_board::{BitBoardSet, BitBoard, BoardType},
@@ -40,29 +40,19 @@ impl BoardSnapshot {
 }
 
 pub struct Board {
-    occupied_mask: ColorMask,
-    pawns: BitBoardSet,
-    knights: BitBoardSet,
-    bishops: BitBoardSet,
-    rooks: BitBoardSet,
-    queens: BitBoardSet,
-    kings: BitBoardSet,
+    white_pieces: Vec<Piece>,
+    black_pieces: Vec<Piece>
 }
 
 impl Board {
     pub fn new() -> Self {
         Self {
-            occupied_mask: ColorMask::new(),
-            pawns: BitBoardSet::new(),
-            knights: BitBoardSet::new(),
-            bishops: BitBoardSet::new(),
-            rooks: BitBoardSet::new(),
-            queens: BitBoardSet::new(),
-            kings: BitBoardSet::new(),
+            white_pieces: Vec::new(),
+            black_pieces: Vec::new(),
         }
     }
 
-    pub fn set_piece(&mut self, square: &Square, piece: Piece, color: Color) {
+    pub fn set_piece(&mut self, square: &Square, piece: PieceType, color: Color) {
         let board_type = match square {
             Square { level: Level::White, .. } => BoardType::White,
             Square { level: Level::Neutral, .. } => BoardType::Neutral,
@@ -73,12 +63,12 @@ impl Board {
         let bit_square = BitBoard::from_square(square);
 
         let bit_board = match piece {
-            Piece::Pawn => self.pawns[board_type],
-            Piece::Knight => self.knights[board_type],
-            Piece::Bishop => self.bishops[board_type],
-            Piece::Rook => self.rooks[board_type],
-            Piece::Queen => self.queens[board_type],
-            Piece::King => self.kings[board_type],
+            PieceType::Pawn => self.pawns[board_type],
+            PieceType::Knight => self.knights[board_type],
+            PieceType::Bishop => self.bishops[board_type],
+            PieceType::Rook => self.rooks[board_type],
+            PieceType::Queen => self.queens[board_type],
+            PieceType::King => self.kings[board_type],
         };
 
         self.occupied_mask[color][board_type] |= bit_square;
@@ -112,7 +102,7 @@ impl Game {
         todo!()
     }
 
-    pub fn push_move(&mut self, piece_move: PieceMove) -> Result<Option<Piece>, ()> {
+    pub fn push_move(&mut self, piece_move: PieceMove) -> Result<Option<PieceType>, ()> {
         let snapshot = BoardSnapshot::new(&self.board);
 
         let captured_piece = match self.pieces.remove(&piece_move.source) {

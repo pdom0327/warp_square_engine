@@ -15,18 +15,20 @@ pub enum Rank {
 }
 
 impl Rank {
-    pub fn from_u8(i: i8) -> Self {
-        unsafe { transmute(i.clamp(Rank::Zero as i8, Rank::Nine as i8)) }
+    pub fn from_u8(i: u8) -> Self {
+        unsafe { transmute(i.clamp(Self::Zero as u8, Self::Nine as u8)) }
     }
 
     pub fn down(&self) -> Self {
-        Self::from_u8(*self as i8 - 1)
+        Self::from_u8(*self as u8 - 1)
     }
 
     pub fn up(&self) -> Self {
-        Self::from_u8(*self as i8 + 1)
+        Self::from_u8(*self as u8 + 1)
     }
 }
+
+pub const NUM_RANKS: u8 = 10;
 
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub enum File {
@@ -39,18 +41,20 @@ pub enum File {
 }
 
 impl File {
-    pub fn from_u8(i: i8) -> Self {
-        unsafe { transmute(i.clamp(File::Z as i8, File::E as i8)) }
+    pub fn from_u8(i: u8) -> Self {
+        unsafe { transmute(i.clamp(Self::Z as u8, Self::E as u8)) }
     }
 
     pub fn left(&self) -> Self {
-        Self::from_u8(*self as i8 - 1)
+        Self::from_u8(*self as u8 - 1)
     }
 
     pub fn right(&self) -> Self {
-        Self::from_u8(*self as i8 + 1)
+        Self::from_u8(*self as u8 + 1)
     }
 }
+
+pub const NUM_FILES: u8 = 6;
 
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub enum Level {
@@ -69,6 +73,12 @@ pub enum Level {
     KL4,
     KL5,
     KL6,
+}
+
+impl Level {
+    pub fn from_u8(i: u8) -> Self {
+        unsafe { transmute(i.clamp(Self::White as u8, Self::KL6 as u8)) }
+    }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]

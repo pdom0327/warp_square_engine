@@ -1,14 +1,14 @@
-use crate::{square::Square, piece::Piece};
+use crate::{square::Square, piece::PieceType};
 
 #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub struct PieceMove {
     pub source: Square,
     pub destination: Square,
-    pub promotion: Option<Piece>,
+    pub promotion: Option<PieceType>,
 }
 
 impl PieceMove {
-    fn new(source: Square, destination: Square, promotion: Option<Piece>) -> Self {
+    fn new(source: Square, destination: Square, promotion: Option<PieceType>) -> Self {
         Self {
             source,
             destination,

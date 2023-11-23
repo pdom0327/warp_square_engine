@@ -14,8 +14,8 @@ impl ColorMask {
         }
     }
 
-    pub fn combine(&self) -> BitBoard {
-        self.raw.iter().fold(BitBoard::Empty, |acc, x| acc | x.combine())
+    pub fn union(&self) -> BitBoard {
+        self.raw.iter().fold(BitBoard::EMPTY, |acc, x| acc | x.union())
     }
 }
 
@@ -31,7 +31,7 @@ impl BitOr<Self> for ColorMask {
     type Output = BitBoard;
 
     fn bitor(self, rhs: Self) -> Self::Output {
-        self.combine() | rhs.combine()
+        self.union() | rhs.union()
     }
 }
 
@@ -40,6 +40,6 @@ impl BitOr<&Self> for ColorMask {
     type Output = BitBoard;
 
     fn bitor(self, rhs: &Self) -> Self::Output {
-        self.combine() | rhs.combine()
+        self.union() | rhs.union()
     }
 }
