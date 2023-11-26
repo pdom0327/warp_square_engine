@@ -1,4 +1,4 @@
-use flapigen::{LanguageConfig, JavaConfig};
+use flapigen::{JavaConfig, LanguageConfig};
 use std::{
     env,
     path::{Path, PathBuf},
@@ -11,13 +11,13 @@ fn main() {
 
     let java_cfg = JavaConfig::new(
         Path::new("lib")
-        .join("src")
-        .join("main")
-        .join("java")
-        .join("club")
-        .join("gamza")
-        .join("warpsquare")
-        .join("engine"),
+            .join("src")
+            .join("main")
+            .join("java")
+            .join("club")
+            .join("gamza")
+            .join("warpsquare")
+            .join("engine"),
         "club.gamza.warpsquare.engine".into(),
     );
 
@@ -25,9 +25,7 @@ fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
     let out_src = Path::new(&out_dir).join("java_glue.rs");
     let flap_gen =
-        flapigen::Generator::new(
-            LanguageConfig::JavaConfig(java_cfg)
-        ).rustfmt_bindings(true);
+        flapigen::Generator::new(LanguageConfig::JavaConfig(java_cfg)).rustfmt_bindings(true);
 
     flap_gen.expand("java bindings", &in_src, &out_src);
     println!("cargo:rerun-if-changed={}", in_src.display());
@@ -49,7 +47,8 @@ fn gen_jni_bindings(jni_c_headers_rs: &Path) {
     let include_dirs = [java_include_dir, java_sys_include_dir];
     println!("jni include dirs {:?}", include_dirs);
 
-    let jni_h_path = search_file_in_directory(&include_dirs[..], "jni.h").expect("Can not find jni.h");
+    let jni_h_path =
+        search_file_in_directory(&include_dirs[..], "jni.h").expect("Can not find jni.h");
     println!("cargo:rerun-if-changed={}", jni_h_path.display());
 
     gen_binding(&include_dirs[..], &jni_h_path, jni_c_headers_rs).expect("gen_binding failed");

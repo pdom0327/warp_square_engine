@@ -10,6 +10,7 @@ name = "engine_java"
 crate-type = ["cdylib"]
 
 [dependencies]
+warp_square_engine = {path = "../"}
 log = "0.4.20"
 
 [build-dependencies]

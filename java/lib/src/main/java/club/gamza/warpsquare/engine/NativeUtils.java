@@ -24,6 +24,7 @@
 package club.gamza.warpsquare.engine;
 
 import java.io.*;
+import java.io.File;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -46,6 +47,7 @@ public class NativeUtils {
      */
     private static final int MIN_PREFIX_LENGTH = 3;
     public static final String NATIVE_FOLDER_PATH_PREFIX = "nativeutils";
+    private static final String OS = System.getProperty("os.name").toLowerCase();
 
     /**
      * Temporary directory which will contain the DLLs.
@@ -72,8 +74,19 @@ public class NativeUtils {
      * (restriction of {@link File#createTempFile(java.lang.String, java.lang.String)}).
      * @throws FileNotFoundException If the file could not be found inside the JAR.
      */
-    public static void loadLibraryFromJar(String path) throws IOException {
- 
+    public static void loadLibraryFromJar() throws IOException {
+        String path = new String();
+
+        if (isWindows()) {
+            path = new String("/engine_java.dll");
+        } else if (isMac()) {
+            path = new String("/libengine_java.dylib");
+        } else if (isUnix()) {
+            path = new String("/libengine_java.so");
+        } else {
+            throw new RuntimeException("Unsupported OS");
+        }
+
         if (null == path || !path.startsWith("/")) {
             throw new IllegalArgumentException("The path has to be absolute (start with '/').");
         }
@@ -116,6 +129,20 @@ public class NativeUtils {
                 temp.deleteOnExit();
             }
         }
+    }
+
+    public static boolean isWindows() {
+        return (OS.indexOf("win") >= 0);
+    }
+
+    public static boolean isMac() {
+        return (OS.indexOf("mac") >= 0);
+    }
+
+    public static boolean isUnix() {
+        return (OS.indexOf("nix") >= 0
+                || OS.indexOf("nux") >= 0
+                || OS.indexOf("aix") > 0);
     }
 
     private static boolean isPosixCompliant() {
