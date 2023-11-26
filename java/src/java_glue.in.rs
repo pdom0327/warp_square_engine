@@ -77,7 +77,7 @@ foreign_class!(class Piece {
     fn Piece::getPieceType(&self) -> PieceType {
         this.piece_type
     }
-    fn Piece::getColor(``&self) -> Color {
+    fn Piece::getColor(&self) -> Color {
         this.color
     }
     fn Piece::get_square(&self) -> Square;
