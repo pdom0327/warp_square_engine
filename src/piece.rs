@@ -1,7 +1,8 @@
 use crate::{
+    bit_board::BitBoard,
     game::Game,
     piece_move::PieceMove,
-    square::{Color, Square}, bit_board::BitBoard,
+    square::{Color, Square},
 };
 
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
@@ -81,6 +82,30 @@ impl PieceType {
 #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub struct Piece {
     pub piece_type: PieceType,
+    pub color: Color,
     pub position: BitBoard,
     pub attacks: BitBoard,
+}
+
+impl Piece {
+    pub fn new(position: BitBoard, piece_type: PieceType, color: Color) -> Self {
+        Self {
+            piece_type,
+            color,
+            position,
+            attacks: BitBoard::EMPTY,
+        }
+    }
+
+    // pub fn compute_moves(&self, game: &Game) -> Vec<PieceMove> {
+    //     self.piece_type.compute_moves(&self.position.to_square(), game)
+    // }
+
+    pub fn get_square(&self) -> Square {
+        BitBoard::into_square(self.position)
+    }
+
+    pub fn get_char(&self) -> &'static str {
+        self.piece_type.get_char(self.color)
+    }
 }

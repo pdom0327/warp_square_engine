@@ -58,7 +58,7 @@ pub const NUM_FILES: u8 = 6;
 
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub enum Level {
-    White,
+    White = 1,
     Neutral,
     Black,
     QL1,

@@ -8,7 +8,7 @@ pub struct PieceMove {
 }
 
 impl PieceMove {
-    fn new(source: Square, destination: Square, promotion: Option<PieceType>) -> Self {
+    pub fn new(source: Square, destination: Square, promotion: Option<PieceType>) -> Self {
         Self {
             source,
             destination,
