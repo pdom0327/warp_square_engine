@@ -96,6 +96,12 @@ foreign_class!(class Piece {
 foreign_class!(class PieceMove {
     self_type PieceMove;
     constructor PieceMove::new(source: Square, destination: Square, promotion: Option<PieceType>) -> PieceMove;
+    fn PieceMove::getSource(&self) -> Square {
+        this.source.clone()
+    }
+    fn PieceMove::getDestination(&self) -> Square {
+        this.destination.clone()
+    }
     foreign_code r#"
     static {
         try {
@@ -110,6 +116,15 @@ foreign_class!(class PieceMove {
 foreign_class!(class Square {
     self_type Square;
     constructor Square::new(rank: Rank, file: File, level: Level) -> Square;
+    fn Square::getRank(&self) -> Rank {
+        this.rank
+    }
+    fn Square::getFile(&self) -> File {
+        this.file
+    }
+    fn Square::getLevel(&self) -> Level {
+        this.level
+    }
     foreign_code r#"
     static {
         try {

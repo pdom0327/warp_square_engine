@@ -18,6 +18,22 @@ public final class PieceMove {
     }
     private static native long init(long source, long destination, int promotion);
 
+    public final Square getSource() {
+        long ret = do_getSource(mNativeObj);
+        Square convRet = new Square(InternalPointerMarker.RAW_PTR, ret);
+
+        return convRet;
+    }
+    private static native long do_getSource(long self);
+
+    public final Square getDestination() {
+        long ret = do_getDestination(mNativeObj);
+        Square convRet = new Square(InternalPointerMarker.RAW_PTR, ret);
+
+        return convRet;
+    }
+    private static native long do_getDestination(long self);
+
     public synchronized void delete() {
         if (mNativeObj != 0) {
             do_delete(mNativeObj);

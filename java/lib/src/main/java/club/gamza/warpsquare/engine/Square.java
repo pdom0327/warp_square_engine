@@ -11,6 +11,30 @@ public final class Square {
     }
     private static native long init(int rank, int file, int level);
 
+    public final Rank getRank() {
+        int ret = do_getRank(mNativeObj);
+        Rank convRet = Rank.fromInt(ret);
+
+        return convRet;
+    }
+    private static native int do_getRank(long self);
+
+    public final File getFile() {
+        int ret = do_getFile(mNativeObj);
+        File convRet = File.fromInt(ret);
+
+        return convRet;
+    }
+    private static native int do_getFile(long self);
+
+    public final Level getLevel() {
+        int ret = do_getLevel(mNativeObj);
+        Level convRet = Level.fromInt(ret);
+
+        return convRet;
+    }
+    private static native int do_getLevel(long self);
+
     public synchronized void delete() {
         if (mNativeObj != 0) {
             do_delete(mNativeObj);
