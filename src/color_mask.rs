@@ -1,4 +1,4 @@
-use std::ops::{BitOr, Index};
+use std::ops::{BitOr, Index, IndexMut};
 
 use crate::{
     bit_board::{BitBoard, BitBoardSet},
@@ -29,6 +29,12 @@ impl Index<Color> for ColorMask {
 
     fn index(&self, index: Color) -> &Self::Output {
         &self.raw[index as usize]
+    }
+}
+
+impl IndexMut<Color> for ColorMask {
+    fn index_mut(&mut self, index: Color) -> &mut Self::Output {
+        &mut self.raw[index as usize]
     }
 }
 

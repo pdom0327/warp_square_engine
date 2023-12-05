@@ -71,6 +71,28 @@ foreign_enum!(
     }
 );
 
+foreign_class!(class BitBoard {
+    self_type BitBoard;
+    private constructor = empty;
+    fn BitBoard::get_rank(&self) -> Rank; alias getRank;
+    fn BitBoard::get_file(&self) -> File; alias getFile;
+    fn BitBoard::get_level(&self) -> Level; alias getLevel;
+    fn BitBoard::from_square(square: &Square) -> BitBoard; alias fromSquare;
+    fn BitBoard::into_square(&self) -> Square; alias intoSquare;
+    fn BitBoard::from_hex(hex: &str) -> BitBoard; alias fromHex;
+    fn BitBoard::to_hex(&self) -> String; alias toHex;
+    fn BitBoard::remove_level(&self) -> BitBoard; alias removeLevel;
+    foreign_code r#"
+    static {
+        try {
+            NativeUtils.loadLibraryFromJar();
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
+    }
+"#;
+});
+
 foreign_class!(class Piece {
     self_type Piece;
     private constructor = empty;
@@ -80,7 +102,7 @@ foreign_class!(class Piece {
     fn Piece::getColor(&self) -> Color {
         this.color
     }
-    fn Piece::get_square(&self) -> Square;
+    fn Piece::get_square(&self) -> Square; alias getSquare;
     fn Piece::get_char(&self) -> &'static str; alias getChar;
     foreign_code r#"
     static {

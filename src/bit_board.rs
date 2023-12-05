@@ -1,4 +1,4 @@
-use std::ops::{BitOr, Index};
+use std::ops::{BitOr, Index, IndexMut};
 
 use bitflags::bitflags;
 
@@ -143,13 +143,29 @@ impl BitBoard {
 
     const LEVEL_MASK: BitBoard = BitBoard::from_bits_retain(0b1111 << LEVEL_SHIFT);
 
+    pub fn get_rank(&self) -> Rank {
+        let shift = self.bits().trailing_zeros() as u8;
+
+        Rank::from_u8(shift % NUM_RANKS)
+    }
+
+    pub fn get_file(&self) -> File {
+        let shift = self.bits().trailing_zeros() as u8;
+
+        File::from_u8(shift / NUM_RANKS)
+    }
+
+    pub fn get_level(&self) -> Level {
+        Level::from_u8((self.bits() >> LEVEL_SHIFT) as u8)
+    }
+
     pub fn from_square(square: &Square) -> Self {
         let shift = square.rank as u8 + square.file as u8 * NUM_RANKS;
 
         Self::from_bits_retain((1 << shift) | ((square.level as u64) << LEVEL_SHIFT))
     }
 
-    pub fn into_square(self) -> Square {
+    pub fn into_square(&self) -> Square {
         let bits = self.bits();
         let shift = bits.trailing_zeros() as u8;
 
@@ -160,8 +176,16 @@ impl BitBoard {
         )
     }
 
-    pub fn remove_level(self) -> Self {
-        self & !Self::LEVEL_MASK
+    pub fn from_hex(hex: &str) -> Self {
+        Self::from_bits_retain(u64::from_str_radix(hex, 16).unwrap_or_default())
+    }
+
+    pub fn to_hex(&self) -> String {
+        format!("{:x}", self.bits())
+    }
+
+    pub fn remove_level(&self) -> Self {
+        *self & !Self::LEVEL_MASK
     }
 }
 
@@ -214,6 +238,12 @@ impl Index<BoardType> for BitBoardSet {
 
     fn index(&self, index: BoardType) -> &Self::Output {
         &self.raw[index as usize]
+    }
+}
+
+impl IndexMut<BoardType> for BitBoardSet {
+    fn index_mut(&mut self, index: BoardType) -> &mut Self::Output {
+        &mut self.raw[index as usize]
     }
 }
 

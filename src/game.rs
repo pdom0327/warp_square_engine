@@ -1,8 +1,8 @@
 use crate::{
-    bit_board::BitBoard,
+    bit_board::{BitBoard, BoardType},
     piece::{Piece, PieceType},
     piece_move::PieceMove,
-    square::{Color, Level, Rank},
+    square::{Color, Level, Rank}, color_mask::ColorMask,
 };
 
 pub struct BoardSnapshot {
@@ -27,6 +27,7 @@ impl BoardSnapshot {
 pub struct Board {
     pub pieces: Vec<Piece>,
     pub captured_pieces: Vec<Piece>,
+    pub occupied: ColorMask,
 }
 
 impl Board {
@@ -34,6 +35,25 @@ impl Board {
         Self {
             pieces: Vec::new(),
             captured_pieces: Vec::new(),
+            occupied: ColorMask::new(),
+        }
+    }
+
+    pub fn convert_board_type(&self, level: Level) -> Option<BoardType> {
+        match level {
+            Level::White => Some(BoardType::White),
+            Level::Neutral => Some(BoardType::Neutral),
+            Level::Black => Some(BoardType::Black),
+            _ => None,
+        }
+    }
+
+    pub fn convert_level(&self, board_type: BoardType) -> Level {
+        match board_type {
+            BoardType::White => Level::White,
+            BoardType::Neutral => Level::Neutral,
+            BoardType::Black => Level::Black,
+            _ => todo!(),
         }
     }
 
@@ -54,18 +74,14 @@ impl Board {
 
     pub fn set_piece(&mut self, square: BitBoard, piece: PieceType, color: Color) -> Option<Piece> {
         let old_piece = self.remove_piece(square);
-        let bit_square = match &old_piece {
-            Some(piece) => piece.position,
-            None => square,
-        };
 
-        self.pieces.push(Piece::new(bit_square, piece, color));
+        self.pieces.push(Piece::new(square, piece, color));
 
         old_piece
     }
 
     pub fn validate_square(&self, square: BitBoard) -> bool {
-        let level = BitBoard::into_square(square).level;
+        let level = BitBoard::into_square(&square).level;
         let square = square.remove_level();
 
         match level {
@@ -84,6 +100,27 @@ impl Board {
             Level::KL4 => BitBoard::KL4_SET.contains(square),
             Level::KL5 => BitBoard::KL5_SET.contains(square),
             Level::KL6 => BitBoard::KL6_SET.contains(square),
+        }
+    }
+
+    pub fn update_occupied(&mut self) {
+        self.occupied = ColorMask::new();
+
+        for piece in self.pieces.iter() {
+            match  self.convert_board_type(piece.position.get_level()) {
+                Some(board_type) => {
+                    self.occupied[piece.color][board_type] |= piece.position;
+                }
+                None => (),
+            }
+        }
+    }
+
+    pub fn update(&mut self) {
+        self.update_occupied();
+        
+        for piece in self.pieces.iter_mut() {
+           piece.update_attacks(&self.occupied);
         }
     }
 }
@@ -272,7 +309,7 @@ impl Game {
                 None => print!(". "),
             }
 
-            if BitBoard::into_square(bit_square).rank == Rank::Four {
+            if bit_square.get_rank() == Rank::Four {
                 println!();
             }
         }
@@ -284,7 +321,7 @@ impl Game {
                 None => print!(". "),
             }
 
-            if BitBoard::into_square(bit_square).rank == Rank::Six {
+            if bit_square.get_rank() == Rank::Six {
                 println!();
             }
         }
@@ -296,7 +333,7 @@ impl Game {
                 None => print!(". "),
             }
 
-            if BitBoard::into_square(bit_square).rank == Rank::Eight {
+            if bit_square.get_rank() == Rank::Eight {
                 println!();
             }
         }

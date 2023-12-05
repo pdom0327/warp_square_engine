@@ -1,7 +1,6 @@
 use crate::{
     bit_board::BitBoard,
-    game::Game,
-    piece_move::PieceMove,
+    color_mask::ColorMask,
     square::{Color, Square},
 };
 
@@ -18,45 +17,6 @@ pub enum PieceType {
 pub const NUM_PIECES: usize = 6;
 
 impl PieceType {
-    pub fn compute_moves(&self, square: &Square, game: &Game) -> Vec<PieceMove> {
-        match self {
-            Self::Pawn => self.compute_pawn_moves(square, game),
-            Self::Knight => self.compute_knight_moves(square, game),
-            Self::Bishop => self.compute_bishop_moves(square, game),
-            Self::Rook => self.compute_rook_moves(square, game),
-            Self::Queen => self.compute_queen_moves(square, game),
-            Self::King => self.compute_king_moves(square, game),
-        }
-    }
-
-    fn compute_pawn_moves(&self, square: &Square, game: &Game) -> Vec<PieceMove> {
-        todo!()
-    }
-
-    fn compute_knight_moves(&self, square: &Square, game: &Game) -> Vec<PieceMove> {
-        todo!()
-    }
-
-    fn compute_bishop_moves(&self, square: &Square, game: &Game) -> Vec<PieceMove> {
-        todo!()
-    }
-
-    fn compute_rook_moves(&self, square: &Square, game: &Game) -> Vec<PieceMove> {
-        todo!()
-    }
-
-    fn compute_queen_moves(&self, square: &Square, game: &Game) -> Vec<PieceMove> {
-        [
-            self.compute_bishop_moves(square, game),
-            self.compute_rook_moves(square, game),
-        ]
-        .concat()
-    }
-
-    fn compute_king_moves(&self, square: &Square, game: &Game) -> Vec<PieceMove> {
-        todo!()
-    }
-
     pub fn get_char(&self, color: Color) -> &'static str {
         match color {
             Color::White => match self {
@@ -97,15 +57,46 @@ impl Piece {
         }
     }
 
-    // pub fn compute_moves(&self, game: &Game) -> Vec<PieceMove> {
-    //     self.piece_type.compute_moves(&self.position.to_square(), game)
-    // }
-
     pub fn get_square(&self) -> Square {
-        BitBoard::into_square(self.position)
+        BitBoard::into_square(&self.position)
     }
 
     pub fn get_char(&self) -> &'static str {
         self.piece_type.get_char(self.color)
+    }
+
+    pub fn update_attacks(&mut self, occupied: &ColorMask) {
+        self.attacks = match self.piece_type {
+            PieceType::Pawn => self.compute_pawn_attacks(occupied),
+            PieceType::Knight => self.compute_knight_attacks(occupied),
+            PieceType::Bishop => self.compute_bishop_attacks(occupied),
+            PieceType::Rook => self.compute_rook_attacks(occupied),
+            PieceType::Queen => self.compute_queen_attacks(occupied),
+            PieceType::King => self.compute_king_attacks(occupied),
+        };
+    }
+
+    pub fn compute_pawn_attacks(&self, occupied: &ColorMask) -> BitBoard {
+        todo!()
+    }
+
+    pub fn compute_knight_attacks(&self, occupied: &ColorMask) -> BitBoard {
+        todo!()
+    }
+
+    pub fn compute_bishop_attacks(&self, occupied: &ColorMask) -> BitBoard {
+        todo!()
+    }
+
+    pub fn compute_rook_attacks(&self, occupied: &ColorMask) -> BitBoard {
+        todo!()
+    }
+
+    pub fn compute_queen_attacks(&self, occupied: &ColorMask) -> BitBoard {
+        todo!()
+    }
+
+    pub fn compute_king_attacks(&self, occupied: &ColorMask) -> BitBoard {
+        todo!()
     }
 }
