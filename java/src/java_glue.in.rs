@@ -164,7 +164,7 @@ foreign_class!(class Square {
 foreign_class!(class Game {
     self_type Game;
     constructor Game::new() -> Game;
-    fn Game::get_attack_squares(&self, square: BitBoard) -> Vec<Square>; alias getAttackSquares;
+    fn Game::get_attack_squares(&self, square: &Square) -> Vec<Square>; alias getAttackSquares;
     fn Game::legal_move(&self, _: PieceMove) -> bool; alias legalMove;
     fn Game::push_move(&mut self, _: PieceMove) -> Result<(), &'static str>; alias pushMove;
     fn Game::pop_move(&mut self) -> Result<PieceMove, &'static str>; alias popMove;

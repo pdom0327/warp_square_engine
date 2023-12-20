@@ -143,8 +143,8 @@ impl Game {
         let _ = self.turn != self.turn;
     }
 
-    pub fn get_attack_squares(&self, square: BitBoard) -> Vec<Square> {
-        let piece = match self.board.get_piece(square) {
+    pub fn get_attack_squares(&self, square: &Square) -> Vec<Square> {
+        let piece = match self.board.get_piece(BitBoard::from_square(square)) {
             Some(piece) => piece,
             None => return Vec::new(),
         };

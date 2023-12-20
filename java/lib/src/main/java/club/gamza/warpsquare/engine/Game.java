@@ -9,10 +9,8 @@ public final class Game {
     }
     private static native long init();
 
-    public final Square [] getAttackSquares(BitBoard square) {
+    public final Square [] getAttackSquares(Square square) {
         long a0 = square.mNativeObj;
-        square.mNativeObj = 0;
-
         Square [] ret = do_getAttackSquares(mNativeObj, a0);
 
         JNIReachabilityFence.reachabilityFence1(square);
