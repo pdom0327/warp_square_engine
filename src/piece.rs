@@ -1,7 +1,7 @@
 use crate::{
-    bit_board::{self, BitBoard, BitBoardSet, BoardType},
+    bit_board::{BitBoard, BitBoardSet, BoardType},
     board::Board,
-    square::{Color, Square, NUM_RANKS},
+    square::{Color, Square},
 };
 
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
@@ -110,21 +110,38 @@ impl Piece {
         let occupied = (board.occupied_piece.union() | &board.occupied_void).intersection();
 
         let mut attacks = BitBoardSet::new();
-        let mut destination = position.forward(self.color);
 
-        if !self.is_moved && !occupied.contains(destination) {
-            destination |= destination.forward(self.color);
-        }
+        // 이동 행마
+        {
+            let mut destination = position.forward(self.color);
 
-        let empty_boards = board.get_empty_board(destination, None);
+            if !self.is_moved && !occupied.contains(destination) {
+                destination |= destination.forward(self.color);
+            }
 
-        for (board_type, square, is_empty) in &empty_boards {
-            if *is_empty {
-                attacks[*board_type] |= *square;
+            let empty_boards = board.get_empty_board(destination, None);
+
+            for (board_type, square, is_empty) in &empty_boards {
+                if *is_empty {
+                    attacks[*board_type] |= *square;
+                }
             }
         }
 
-        
+        // 공격 행마
+        {
+            let destination = position.forward_left(self.color) | position.forward_right(self.color);
+
+            let empty_boards = board.get_empty_board(destination, Some(self.color));
+
+            for (board_type, square, is_empty) in &empty_boards {
+                if !*is_empty {
+                    attacks[*board_type] |= *square;
+                }
+            }
+            
+            // TODO: 앙파상 추가
+        }
 
         attacks
     }

@@ -3,7 +3,7 @@ use crate::{
     board::{Board, BoardSnapshot},
     piece::PieceType,
     piece_move::PieceMove,
-    square::{Color, Rank},
+    square::{Color, Rank, Square},
 };
 
 pub struct Game {
@@ -141,6 +141,15 @@ impl Game {
 
     fn pass_turn(&mut self) {
         let _ = self.turn != self.turn;
+    }
+
+    pub fn get_attack_squares(&self, square: BitBoard) -> Vec<Square> {
+        let piece = match self.board.get_piece(square) {
+            Some(piece) => piece,
+            None => return Vec::new(),
+        };
+
+        piece.get_attack_squares(&self.board)
     }
 
     pub fn legal_move(&self, piece_move: PieceMove) -> bool {

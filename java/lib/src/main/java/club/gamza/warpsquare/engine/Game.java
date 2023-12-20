@@ -9,6 +9,18 @@ public final class Game {
     }
     private static native long init();
 
+    public final Square [] getAttackSquares(BitBoard square) {
+        long a0 = square.mNativeObj;
+        square.mNativeObj = 0;
+
+        Square [] ret = do_getAttackSquares(mNativeObj, a0);
+
+        JNIReachabilityFence.reachabilityFence1(square);
+
+        return ret;
+    }
+    private static native Square [] do_getAttackSquares(long self, long square);
+
     public final boolean legalMove(PieceMove a0) {
         long a00 = a0.mNativeObj;
         a0.mNativeObj = 0;
@@ -43,6 +55,14 @@ public final class Game {
         do_print(mNativeObj);
     }
     private static native void do_print(long self);
+
+    public final Color getTurn() {
+        int ret = do_getTurn(mNativeObj);
+        Color convRet = Color.fromInt(ret);
+
+        return convRet;
+    }
+    private static native int do_getTurn(long self);
 
     public final Piece [] getPieces() {
         Piece [] ret = do_getPieces(mNativeObj);

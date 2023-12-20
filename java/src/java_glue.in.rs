@@ -102,6 +102,9 @@ foreign_class!(class Piece {
     fn Piece::getColor(&self) -> Color {
         this.color
     }
+    fn Piece::getPosition(&self) -> BitBoard {
+        this.position
+    }
     fn Piece::get_square(&self) -> Square; alias getSquare;
     fn Piece::get_char(&self) -> &'static str; alias getChar;
     foreign_code r#"
@@ -161,10 +164,14 @@ foreign_class!(class Square {
 foreign_class!(class Game {
     self_type Game;
     constructor Game::new() -> Game;
+    fn Game::get_attack_squares(&self, square: BitBoard) -> Vec<Square>; alias getAttackSquares;
     fn Game::legal_move(&self, _: PieceMove) -> bool; alias legalMove;
     fn Game::push_move(&mut self, _: PieceMove) -> Result<(), &'static str>; alias pushMove;
     fn Game::pop_move(&mut self) -> Result<PieceMove, &'static str>; alias popMove;
     fn Game::print(&self);
+    fn Game::getTurn(&self) -> Color {
+        this.turn
+    }
     fn Game::getPieces(&self) -> Vec<Piece> {
         this.board.pieces.clone()
     }

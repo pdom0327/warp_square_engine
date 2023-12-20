@@ -22,13 +22,21 @@ public final class Piece {
     }
     private static native int do_getColor(long self);
 
-    public final Square get_square() {
-        long ret = do_get_square(mNativeObj);
+    public final BitBoard getPosition() {
+        long ret = do_getPosition(mNativeObj);
+        BitBoard convRet = new BitBoard(InternalPointerMarker.RAW_PTR, ret);
+
+        return convRet;
+    }
+    private static native long do_getPosition(long self);
+
+    public final Square getSquare() {
+        long ret = do_getSquare(mNativeObj);
         Square convRet = new Square(InternalPointerMarker.RAW_PTR, ret);
 
         return convRet;
     }
-    private static native long do_get_square(long self);
+    private static native long do_getSquare(long self);
 
     public final String getChar() {
         String ret = do_getChar(mNativeObj);

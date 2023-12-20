@@ -73,43 +73,8 @@ impl Board {
         self.board_set[board_type as usize].1
     }
 
-    pub fn check_empty(&self, square: BitBoard) -> bool {
-        let square = square.remove_level();
-        let occupied = self.occupied_piece.union();
-
-        for board_type in BoardType::iter() {
-            let level = self.convert_level(board_type);
-
-            let is_void = !match level {
-                Level::White => BitBoard::WHITE_SET.contains(square),
-                Level::Neutral => BitBoard::NEUTRAL_SET.contains(square),
-                Level::Black => BitBoard::BLACK_SET.contains(square),
-                Level::QL1 => BitBoard::QL1_SET.contains(square),
-                Level::QL2 => BitBoard::QL2_SET.contains(square),
-                Level::QL3 => BitBoard::QL3_SET.contains(square),
-                Level::QL4 => BitBoard::QL4_SET.contains(square),
-                Level::QL5 => BitBoard::QL5_SET.contains(square),
-                Level::QL6 => BitBoard::QL6_SET.contains(square),
-                Level::KL1 => BitBoard::KL1_SET.contains(square),
-                Level::KL2 => BitBoard::KL2_SET.contains(square),
-                Level::KL3 => BitBoard::KL3_SET.contains(square),
-                Level::KL4 => BitBoard::KL4_SET.contains(square),
-                Level::KL5 => BitBoard::KL5_SET.contains(square),
-                Level::KL6 => BitBoard::KL6_SET.contains(square),
-            };
-
-            if is_void {
-                continue;
-            }
-
-            if !occupied[board_type].contains(square) {
-                return true;
-            }
-        }
-
-        false
-    }
-
+    /// 같은 Rank, File의 모든 Square 상태를 반환합니다.
+    /// TODO: 함수 이름 변경, 반환값 정리
     pub fn get_empty_board(&self, squares: BitBoard, ignore_color: Option<Color>) -> Vec<(BoardType, BitBoard, bool)> {
         let mut result = Vec::new();
 
