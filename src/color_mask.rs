@@ -1,9 +1,6 @@
-use std::ops::{BitOr, Index, IndexMut};
+use std::ops::{Index, IndexMut};
 
-use crate::{
-    bit_board::{BitBoard, BitBoardSet},
-    square::Color,
-};
+use crate::{bit_board::BitBoardSet, square::Color};
 
 #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub struct ColorMask {
@@ -17,10 +14,8 @@ impl ColorMask {
         }
     }
 
-    pub fn union(&self) -> BitBoard {
-        self.raw
-            .iter()
-            .fold(BitBoard::EMPTY, |acc, x| acc | x.union())
+    pub fn union(&self) -> BitBoardSet {
+        self.raw.iter().fold(BitBoardSet::new(), |acc, x| acc | x)
     }
 }
 
@@ -35,21 +30,5 @@ impl Index<Color> for ColorMask {
 impl IndexMut<Color> for ColorMask {
     fn index_mut(&mut self, index: Color) -> &mut Self::Output {
         &mut self.raw[index as usize]
-    }
-}
-
-impl BitOr<Self> for ColorMask {
-    type Output = BitBoard;
-
-    fn bitor(self, rhs: Self) -> Self::Output {
-        self.union() | rhs.union()
-    }
-}
-
-impl BitOr<&Self> for ColorMask {
-    type Output = BitBoard;
-
-    fn bitor(self, rhs: &Self) -> Self::Output {
-        self.union() | rhs.union()
     }
 }

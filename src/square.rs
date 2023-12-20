@@ -1,4 +1,6 @@
-use std::mem::transmute;
+use std::{mem::transmute, ops::Not};
+
+use crate::bit_board::BitBoard;
 
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub enum Rank {
@@ -79,12 +81,55 @@ impl Level {
     pub fn from_u8(i: u8) -> Self {
         unsafe { transmute(i.clamp(Self::White as u8, Self::KL6 as u8)) }
     }
+
+    /// BitBoard Level 영역 값으로 변환
+    pub fn into_bit_board(&self) -> BitBoard {
+        BitBoard::from_bits_retain((*self as u64) << BitBoard::LEVEL_SHIFT)
+    }
+
+    /// BitBoard 존재 가능 영역
+    pub fn get_bit_board(&self) -> BitBoard {
+        match self {
+            Level::White => BitBoard::WHITE_SET,
+            Level::Neutral => BitBoard::NEUTRAL_SET,
+            Level::Black => BitBoard::BLACK_SET,
+            Level::QL1 => BitBoard::QL1_SET,
+            Level::QL2 => BitBoard::QL2_SET,
+            Level::QL3 => BitBoard::QL3_SET,
+            Level::QL4 => BitBoard::QL4_SET,
+            Level::QL5 => BitBoard::QL5_SET,
+            Level::QL6 => BitBoard::QL6_SET,
+            Level::KL1 => BitBoard::KL1_SET,
+            Level::KL2 => BitBoard::KL2_SET,
+            Level::KL3 => BitBoard::KL3_SET,
+            Level::KL4 => BitBoard::KL4_SET,
+            Level::KL5 => BitBoard::KL5_SET,
+            Level::KL6 => BitBoard::KL6_SET,
+        }
+    }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
 pub enum Color {
     White,
     Black,
+}
+
+impl Color {
+    pub fn iter() -> impl Iterator<Item = Self> {
+        [Self::White, Self::Black].iter().copied()
+    }
+}
+
+impl Not for Color {
+    type Output = Color;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Color::White => Color::Black,
+            Color::Black => Color::White,
+        }
+    }
 }
 
 #[derive(Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]

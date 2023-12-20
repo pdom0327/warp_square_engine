@@ -1,7 +1,7 @@
 use crate::{
-    bit_board::BitBoard,
-    color_mask::ColorMask,
-    square::{Color, Square},
+    bit_board::{self, BitBoard, BitBoardSet, BoardType},
+    board::Board,
+    square::{Color, Square, NUM_RANKS},
 };
 
 #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
@@ -44,7 +44,8 @@ pub struct Piece {
     pub piece_type: PieceType,
     pub color: Color,
     pub position: BitBoard,
-    pub attacks: BitBoard,
+    pub attacks: BitBoardSet,
+    pub is_moved: bool,
 }
 
 impl Piece {
@@ -53,7 +54,8 @@ impl Piece {
             piece_type,
             color,
             position,
-            attacks: BitBoard::EMPTY,
+            attacks: BitBoardSet::new(),
+            is_moved: false,
         }
     }
 
@@ -65,38 +67,202 @@ impl Piece {
         self.piece_type.get_char(self.color)
     }
 
-    pub fn update_attacks(&mut self, occupied: &ColorMask) {
+    pub fn get_attack_squares(&self, board: &Board) -> Vec<Square> {
+        let mut result = Vec::new();
+
+        for board_type in BoardType::iter() {
+            for bit_square in self.attacks[board_type].iter() {
+                result.push(
+                    (bit_square | board.convert_level(board_type).into_bit_board()).into_square(),
+                );
+            }
+        }
+
+        result
+    }
+
+    pub fn compute_ray_occupied(board: &Board) -> BitBoard {
+        let occupied = (board.occupied_piece.union() | &board.occupied_void).intersection();
+
+        let board_area = board
+            .board_set
+            .iter()
+            .fold(BitBoard::EMPTY, |acc, (_, level)| {
+                acc | level.get_bit_board()
+            });
+
+        occupied & board_area
+    }
+
+    pub fn update_attacks(&mut self, board: &Board) {
         self.attacks = match self.piece_type {
-            PieceType::Pawn => self.compute_pawn_attacks(occupied),
-            PieceType::Knight => self.compute_knight_attacks(occupied),
-            PieceType::Bishop => self.compute_bishop_attacks(occupied),
-            PieceType::Rook => self.compute_rook_attacks(occupied),
-            PieceType::Queen => self.compute_queen_attacks(occupied),
-            PieceType::King => self.compute_king_attacks(occupied),
+            PieceType::Pawn => self.compute_pawn_attacks(board),
+            PieceType::Knight => self.compute_knight_attacks(board),
+            PieceType::Bishop => self.compute_bishop_attacks(board),
+            PieceType::Rook => self.compute_rook_attacks(board),
+            PieceType::Queen => self.compute_queen_attacks(board),
+            PieceType::King => self.compute_king_attacks(board),
         };
     }
 
-    pub fn compute_pawn_attacks(&self, occupied: &ColorMask) -> BitBoard {
-        todo!()
+    pub fn compute_pawn_attacks(&self, board: &Board) -> BitBoardSet {
+        let position = self.position.remove_level();
+        let occupied = (board.occupied_piece.union() | &board.occupied_void).intersection();
+
+        let mut attacks = BitBoardSet::new();
+        let mut destination = position.forward(self.color);
+
+        if !self.is_moved && !occupied.contains(destination) {
+            destination |= destination.forward(self.color);
+        }
+
+        let empty_boards = board.get_empty_board(destination, None);
+
+        for (board_type, square, is_empty) in &empty_boards {
+            if *is_empty {
+                attacks[*board_type] |= *square;
+            }
+        }
+
+        
+
+        attacks
     }
 
-    pub fn compute_knight_attacks(&self, occupied: &ColorMask) -> BitBoard {
-        todo!()
+    pub fn compute_knight_attacks(&self, board: &Board) -> BitBoardSet {
+        let position = self.position.remove_level();
+
+        let mut attacks = BitBoardSet::new();
+        let mut destination = BitBoard::EMPTY;
+
+        destination |=
+            BitBoard::from_bits_retain(position.bits() >> 21 & (!BitBoard::NINE_RANKS).bits());
+        destination |=
+            BitBoard::from_bits_retain(position.bits() >> 19 & (!BitBoard::ZERO_RANKS).bits());
+        destination |= BitBoard::from_bits_retain(
+            position.bits() >> 12 & (!(BitBoard::NINE_RANKS | BitBoard::EIGHT_RANKS)).bits(),
+        );
+        destination |= BitBoard::from_bits_retain(
+            position.bits() >> 8 & (!(BitBoard::ZERO_RANKS | BitBoard::ONE_RANKS)).bits(),
+        );
+        destination |= BitBoard::from_bits_retain(
+            position.bits() << 8 & (!(BitBoard::NINE_RANKS | BitBoard::EIGHT_RANKS)).bits(),
+        );
+        destination |= BitBoard::from_bits_retain(
+            position.bits() << 12 & (!(BitBoard::ZERO_RANKS | BitBoard::ONE_RANKS)).bits(),
+        );
+        destination |=
+            BitBoard::from_bits_retain(position.bits() << 19 & (!BitBoard::NINE_RANKS).bits());
+        destination |=
+            BitBoard::from_bits_retain(position.bits() << 21 & (!BitBoard::ZERO_RANKS).bits());
+
+        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+
+        for (board_type, square, is_empty) in &empty_boards {
+            if *is_empty {
+                attacks[*board_type] |= *square;
+            }
+        }
+
+        attacks
     }
 
-    pub fn compute_bishop_attacks(&self, occupied: &ColorMask) -> BitBoard {
-        todo!()
+    pub fn compute_bishop_attacks(&self, board: &Board) -> BitBoardSet {
+        let position = self.position.remove_level();
+        let occupied = Self::compute_ray_occupied(board);
+
+        let mut attacks = BitBoardSet::new();
+        let mut destination = BitBoard::EMPTY;
+
+        destination |= position.ray(occupied, |current| current.down_left());
+        destination |= position.ray(occupied, |current| current.down_right());
+        destination |= position.ray(occupied, |current| current.up_left());
+        destination |= position.ray(occupied, |current| current.up_right());
+
+        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+
+        for (board_type, square, is_empty) in &empty_boards {
+            if *is_empty {
+                attacks[*board_type] |= *square;
+            }
+        }
+
+        attacks
     }
 
-    pub fn compute_rook_attacks(&self, occupied: &ColorMask) -> BitBoard {
-        todo!()
+    pub fn compute_rook_attacks(&self, board: &Board) -> BitBoardSet {
+        let position = self.position.remove_level();
+        let occupied = Self::compute_ray_occupied(board);
+
+        let mut attacks = BitBoardSet::new();
+        let mut destination = BitBoard::EMPTY;
+
+        destination |= position.ray(occupied, |current| current.down());
+        destination |= position.ray(occupied, |current| current.up());
+        destination |= position.ray(occupied, |current| current.left());
+        destination |= position.ray(occupied, |current| current.right());
+
+        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+
+        for (board_type, square, is_empty) in &empty_boards {
+            if *is_empty {
+                attacks[*board_type] |= *square;
+            }
+        }
+
+        attacks
     }
 
-    pub fn compute_queen_attacks(&self, occupied: &ColorMask) -> BitBoard {
-        todo!()
+    pub fn compute_queen_attacks(&self, board: &Board) -> BitBoardSet {
+        let position = self.position.remove_level();
+        let occupied = Self::compute_ray_occupied(board);
+
+        let mut attacks = BitBoardSet::new();
+        let mut destination = BitBoard::EMPTY;
+
+        destination |= position.ray(occupied, |current| current.down());
+        destination |= position.ray(occupied, |current| current.up());
+        destination |= position.ray(occupied, |current| current.left());
+        destination |= position.ray(occupied, |current| current.right());
+        destination |= position.ray(occupied, |current| current.down_left());
+        destination |= position.ray(occupied, |current| current.down_right());
+        destination |= position.ray(occupied, |current| current.up_left());
+        destination |= position.ray(occupied, |current| current.up_right());
+
+        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+
+        for (board_type, square, is_empty) in &empty_boards {
+            if *is_empty {
+                attacks[*board_type] |= *square;
+            }
+        }
+
+        attacks
     }
 
-    pub fn compute_king_attacks(&self, occupied: &ColorMask) -> BitBoard {
-        todo!()
+    pub fn compute_king_attacks(&self, board: &Board) -> BitBoardSet {
+        let position = self.position.remove_level();
+
+        let mut attacks = BitBoardSet::new();
+        let mut destination = BitBoard::EMPTY;
+
+        destination |= position.down();
+        destination |= position.up();
+        destination |= position.left();
+        destination |= position.right();
+        destination |= position.down_left();
+        destination |= position.down_right();
+        destination |= position.up_left();
+        destination |= position.down_right();
+
+        let empty_boards = board.get_empty_board(destination, Some(!self.color));
+
+        for (board_type, square, is_empty) in &empty_boards {
+            if *is_empty {
+                attacks[*board_type] |= *square;
+            }
+        }
+
+        attacks
     }
 }

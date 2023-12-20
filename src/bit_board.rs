@@ -1,10 +1,8 @@
-use std::ops::{BitOr, Index, IndexMut};
+use std::ops::{BitAnd, BitOr, Index, IndexMut};
 
 use bitflags::bitflags;
 
-use crate::square::{File, Level, Rank, Square, NUM_RANKS};
-
-const LEVEL_SHIFT: usize = 60;
+use crate::square::{Color, File, Level, Rank, Square, NUM_RANKS};
 
 bitflags! {
     #[derive(Copy, Clone, Eq, PartialEq, PartialOrd, Debug, Hash)]
@@ -71,6 +69,44 @@ bitflags! {
         const E8 = 1 << 58;
         const E9 = 1 << 59;
 
+        const ZERO_RANKS =  Self::Z0.bits() | Self::A0.bits() | Self::B0.bits() | Self::C0.bits() | Self::D0.bits() | Self::E0.bits();
+
+        const ONE_RANKS =   Self::Z1.bits() | Self::A1.bits() | Self::B1.bits() | Self::C1.bits() | Self::D1.bits() | Self::E1.bits();
+
+        const TWO_RANKS =   Self::Z2.bits() | Self::A2.bits() | Self::B2.bits() | Self::C2.bits() | Self::D2.bits() | Self::E2.bits();
+
+        const THREE_RANKS = Self::Z3.bits() | Self::A3.bits() | Self::B3.bits() | Self::C3.bits() | Self::D3.bits() | Self::E3.bits();
+
+        const FOUR_RANKS =  Self::Z4.bits() | Self::A4.bits() | Self::B4.bits() | Self::C4.bits() | Self::D4.bits() | Self::E4.bits();
+
+        const FIVE_RANKS =  Self::Z5.bits() | Self::A5.bits() | Self::B5.bits() | Self::C5.bits() | Self::D5.bits() | Self::E5.bits();
+
+        const SIX_RANKS =   Self::Z6.bits() | Self::A6.bits() | Self::B6.bits() | Self::C6.bits() | Self::D6.bits() | Self::E6.bits();
+
+        const SEVEN_RANKS = Self::Z7.bits() | Self::A7.bits() | Self::B7.bits() | Self::C7.bits() | Self::D7.bits() | Self::E7.bits();
+
+        const EIGHT_RANKS = Self::Z8.bits() | Self::A8.bits() | Self::B8.bits() | Self::C8.bits() | Self::D8.bits() | Self::E8.bits();
+
+        const NINE_RANKS =  Self::Z9.bits() | Self::A9.bits() | Self::B9.bits() | Self::C9.bits() | Self::D9.bits() | Self::E9.bits();
+
+        const Z_FILES =     Self::Z0.bits() | Self::Z1.bits() | Self::Z2.bits() | Self::Z3.bits() | Self::Z4.bits() |
+                            Self::Z5.bits() | Self::Z6.bits() | Self::Z7.bits() | Self::Z8.bits() | Self::Z9.bits();
+
+        const A_FILES =     Self::A0.bits() | Self::A1.bits() | Self::A2.bits() | Self::A3.bits() | Self::A4.bits() |
+                            Self::A5.bits() | Self::A6.bits() | Self::A7.bits() | Self::A8.bits() | Self::A9.bits();
+
+        const B_FILES =     Self::B0.bits() | Self::B1.bits() | Self::B2.bits() | Self::B3.bits() | Self::B4.bits() |
+                            Self::B5.bits() | Self::B6.bits() | Self::B7.bits() | Self::B8.bits() | Self::B9.bits();
+
+        const C_FILES =     Self::C0.bits() | Self::C1.bits() | Self::C2.bits() | Self::C3.bits() | Self::C4.bits() |
+                            Self::C5.bits() | Self::C6.bits() | Self::C7.bits() | Self::C8.bits() | Self::C9.bits();
+
+        const D_FILES =     Self::D0.bits() | Self::D1.bits() | Self::D2.bits() | Self::D3.bits() | Self::D4.bits() |
+                            Self::D5.bits() | Self::D6.bits() | Self::D7.bits() | Self::D8.bits() | Self::D9.bits();
+
+        const E_FILES =     Self::E0.bits() | Self::E1.bits() | Self::E2.bits() | Self::E3.bits() | Self::E4.bits() |
+                            Self::E5.bits() | Self::E6.bits() | Self::E7.bits() | Self::E8.bits() | Self::E9.bits();
+
         const WHITE_SET =   Self::A1.bits() | Self::A2.bits() | Self::A3.bits() | Self::A4.bits() |
                             Self::B1.bits() | Self::B2.bits() | Self::B3.bits() | Self::B4.bits() |
                             Self::C1.bits() | Self::C2.bits() | Self::C3.bits() | Self::C4.bits() |
@@ -125,23 +161,107 @@ bitflags! {
 }
 
 impl BitBoard {
-    pub const WHITE: BitBoard = BitBoard::from_bits_retain(0b0001 << LEVEL_SHIFT);
-    pub const NEUTRAL: BitBoard = BitBoard::from_bits_retain(0b0010 << LEVEL_SHIFT);
-    pub const BLACK: BitBoard = BitBoard::from_bits_retain(0b0011 << LEVEL_SHIFT);
-    pub const QL1: BitBoard = BitBoard::from_bits_retain(0b0100 << LEVEL_SHIFT);
-    pub const QL2: BitBoard = BitBoard::from_bits_retain(0b0101 << LEVEL_SHIFT);
-    pub const QL3: BitBoard = BitBoard::from_bits_retain(0b0110 << LEVEL_SHIFT);
-    pub const QL4: BitBoard = BitBoard::from_bits_retain(0b0111 << LEVEL_SHIFT);
-    pub const QL5: BitBoard = BitBoard::from_bits_retain(0b1000 << LEVEL_SHIFT);
-    pub const QL6: BitBoard = BitBoard::from_bits_retain(0b1001 << LEVEL_SHIFT);
-    pub const KL1: BitBoard = BitBoard::from_bits_retain(0b1010 << LEVEL_SHIFT);
-    pub const KL2: BitBoard = BitBoard::from_bits_retain(0b1011 << LEVEL_SHIFT);
-    pub const KL3: BitBoard = BitBoard::from_bits_retain(0b1100 << LEVEL_SHIFT);
-    pub const KL4: BitBoard = BitBoard::from_bits_retain(0b1101 << LEVEL_SHIFT);
-    pub const KL5: BitBoard = BitBoard::from_bits_retain(0b1110 << LEVEL_SHIFT);
-    pub const KL6: BitBoard = BitBoard::from_bits_retain(0b1111 << LEVEL_SHIFT);
+    pub const LEVEL_SHIFT: usize = 60;
+    const LEVEL_MASK: BitBoard = BitBoard::from_bits_retain(0b1111 << Self::LEVEL_SHIFT);
 
-    const LEVEL_MASK: BitBoard = BitBoard::from_bits_retain(0b1111 << LEVEL_SHIFT);
+    pub const WHITE: BitBoard = BitBoard::from_bits_retain(0b0001 << Self::LEVEL_SHIFT);
+    pub const NEUTRAL: BitBoard = BitBoard::from_bits_retain(0b0010 << Self::LEVEL_SHIFT);
+    pub const BLACK: BitBoard = BitBoard::from_bits_retain(0b0011 << Self::LEVEL_SHIFT);
+    pub const QL1: BitBoard = BitBoard::from_bits_retain(0b0100 << Self::LEVEL_SHIFT);
+    pub const QL2: BitBoard = BitBoard::from_bits_retain(0b0101 << Self::LEVEL_SHIFT);
+    pub const QL3: BitBoard = BitBoard::from_bits_retain(0b0110 << Self::LEVEL_SHIFT);
+    pub const QL4: BitBoard = BitBoard::from_bits_retain(0b0111 << Self::LEVEL_SHIFT);
+    pub const QL5: BitBoard = BitBoard::from_bits_retain(0b1000 << Self::LEVEL_SHIFT);
+    pub const QL6: BitBoard = BitBoard::from_bits_retain(0b1001 << Self::LEVEL_SHIFT);
+    pub const KL1: BitBoard = BitBoard::from_bits_retain(0b1010 << Self::LEVEL_SHIFT);
+    pub const KL2: BitBoard = BitBoard::from_bits_retain(0b1011 << Self::LEVEL_SHIFT);
+    pub const KL3: BitBoard = BitBoard::from_bits_retain(0b1100 << Self::LEVEL_SHIFT);
+    pub const KL4: BitBoard = BitBoard::from_bits_retain(0b1101 << Self::LEVEL_SHIFT);
+    pub const KL5: BitBoard = BitBoard::from_bits_retain(0b1110 << Self::LEVEL_SHIFT);
+    pub const KL6: BitBoard = BitBoard::from_bits_retain(0b1111 << Self::LEVEL_SHIFT);
+
+    pub fn down(&self) -> Self {
+        Self::from_bits_retain((*self & !Self::ZERO_RANKS).bits() >> 1)
+    }
+
+    pub fn up(&self) -> Self {
+        Self::from_bits_retain((*self & !Self::NINE_RANKS).bits() << 1)
+    }
+
+    pub fn left(&self) -> Self {
+        Self::from_bits_retain(self.bits() >> NUM_RANKS)
+    }
+
+    pub fn right(&self) -> Self {
+        Self::from_bits_retain(self.bits() << NUM_RANKS)
+    }
+
+    pub fn down_left(&self) -> Self {
+        Self::from_bits_retain(((*self & !Self::ZERO_RANKS).bits() >> 1) >> NUM_RANKS)
+    }
+
+    pub fn down_right(&self) -> Self {
+        Self::from_bits_retain(((*self & !Self::ZERO_RANKS).bits() >> 1) << NUM_RANKS)
+    }
+
+        pub fn up_left(&self) -> Self {
+        Self::from_bits_retain(((*self & !Self::NINE_RANKS).bits() << 1) >> NUM_RANKS)
+    }
+
+    pub fn up_right(&self) -> Self {
+        Self::from_bits_retain(((*self & !Self::NINE_RANKS).bits() << 1) << NUM_RANKS)
+    }
+
+    pub fn forward(&self, color: Color) -> Self {
+        match color {
+            Color::White => self.up(),
+            Color::Black => self.down(),
+        }
+    }
+
+    pub fn backward(&self, color: Color) -> Self {
+        match color {
+            Color::White => self.down(),
+            Color::Black => self.up(),
+        }
+    }
+
+    pub fn forward_left(&self, color: Color) -> Self {
+        match color {
+            Color::White => self.up_left(),
+            Color::Black => self.down_right(),
+        }
+    }
+
+    pub fn forward_right(&self, color: Color) -> Self {
+        match color {
+            Color::White => self.up_right(),
+            Color::Black => self.down_left(),
+        }
+    }
+
+    pub fn ray(&self, occupied: BitBoard, next_square: impl Fn(&Self) -> Self) -> BitBoard {
+        let mut result = BitBoard::EMPTY;
+        let mut current = *self;
+
+        loop {
+            let next = next_square(&current);
+
+            if next.is_empty() {
+                break;
+            }
+
+            result |= next;
+
+            if occupied.contains(next) {
+                break;
+            }
+
+            current = next;
+        }
+        
+        result
+    }
 
     pub fn get_rank(&self) -> Rank {
         let shift = self.bits().trailing_zeros() as u8;
@@ -156,13 +276,13 @@ impl BitBoard {
     }
 
     pub fn get_level(&self) -> Level {
-        Level::from_u8((self.bits() >> LEVEL_SHIFT) as u8)
+        Level::from_u8((self.bits() >> Self::LEVEL_SHIFT) as u8)
     }
 
     pub fn from_square(square: &Square) -> Self {
         let shift = square.rank as u8 + square.file as u8 * NUM_RANKS;
 
-        Self::from_bits_retain((1 << shift) | ((square.level as u64) << LEVEL_SHIFT))
+        Self::from_bits_retain((1 << shift) | ((square.level as u64) << Self::LEVEL_SHIFT))
     }
 
     pub fn into_square(&self) -> Square {
@@ -172,7 +292,7 @@ impl BitBoard {
         Square::new(
             Rank::from_u8(shift % NUM_RANKS),
             File::from_u8(shift / NUM_RANKS),
-            Level::from_u8((bits >> LEVEL_SHIFT) as u8),
+            Level::from_u8((bits >> Self::LEVEL_SHIFT) as u8),
         )
     }
 
@@ -228,8 +348,16 @@ impl BitBoardSet {
         }
     }
 
+    pub fn iter(&self) -> impl Iterator<Item = &BitBoard> {
+        self.raw.iter()
+    }
+
     pub fn union(&self) -> BitBoard {
         self.raw.iter().fold(BitBoard::EMPTY, |acc, x| acc | *x)
+    }
+
+    pub fn intersection(&self) -> BitBoard {
+        self.raw.iter().fold(BitBoard::all(), |acc, x| acc & *x)
     }
 }
 
@@ -248,17 +376,57 @@ impl IndexMut<BoardType> for BitBoardSet {
 }
 
 impl BitOr<Self> for BitBoardSet {
-    type Output = BitBoard;
+    type Output = BitBoardSet;
 
     fn bitor(self, rhs: Self) -> Self::Output {
-        self.union() | rhs.union()
+        let mut result = self.clone();
+
+        for (i, bit_board) in result.raw.iter_mut().enumerate() {
+            *bit_board |= rhs.raw[i];
+        }
+
+        result
     }
 }
 
 impl BitOr<&Self> for BitBoardSet {
-    type Output = BitBoard;
+    type Output = BitBoardSet;
 
     fn bitor(self, rhs: &Self) -> Self::Output {
-        self.union() | rhs.union()
+        let mut result = self.clone();
+
+        for (i, bit_board) in result.raw.iter_mut().enumerate() {
+            *bit_board |= rhs.raw[i];
+        }
+
+        result
+    }
+}
+
+impl BitAnd<Self> for BitBoardSet {
+    type Output = BitBoardSet;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        let mut result = self.clone();
+
+        for (i, bit_board) in result.raw.iter_mut().enumerate() {
+            *bit_board &= rhs.raw[i];
+        }
+
+        result
+    }
+}
+
+impl BitAnd<&Self> for BitBoardSet {
+    type Output = BitBoardSet;
+
+    fn bitand(self, rhs: &Self) -> Self::Output {
+        let mut result = self.clone();
+
+        for (i, bit_board) in result.raw.iter_mut().enumerate() {
+            *bit_board &= rhs.raw[i];
+        }
+
+        result
     }
 }
