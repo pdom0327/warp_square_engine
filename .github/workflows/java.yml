@@ -2,18 +2,23 @@ on: push
 
 jobs:
   release:
-    name: release ubuntu
+    name: Release Windows
     runs-on: windows-2019
     steps:
       - uses: actions/checkout@v4
       - uses: crazy-max/ghaction-chocolatey@v3
         with:
             args: install rust
-      - name: Get list of rules
+      - name: Cargo Build
         shell: pwsh
         working-directory: ./java
-        run: |
-          cargo build --release
+        run: cargo build --release
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-windows
+          path: ./target/release/engine_java.dll
+
         # uses: rust-build/rust-build.action@v1.4.4
         # env:
         #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
