@@ -52,4 +52,4 @@ jobs:
           merge-multiple: true
       - name: Gradlew Build
         working-directory: ./java
-        run: gradlew build
+        run: ./gradlew build
