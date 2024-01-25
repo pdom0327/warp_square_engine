@@ -5,7 +5,14 @@ jobs:
     name: Build ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest]
+        include:
+          - os: windows-latest
+            lib: engine_java.dll
+          # - os: macos-latest
+          #   lib: libengine_java.dylib
+          - os: ubuntu-latest
+            lib: libengine_java.so
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
