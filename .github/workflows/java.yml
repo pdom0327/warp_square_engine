@@ -5,7 +5,7 @@ jobs:
     name: Build ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2022, macos-latest, ubuntu-20.04]
+        os: [windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
