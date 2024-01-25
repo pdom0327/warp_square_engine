@@ -13,11 +13,10 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
-          working-directory: ./java
+      - name: Cargo Build
+        shell: pwsh
+        working-directory: ./java
+        run: cargo build --release
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
