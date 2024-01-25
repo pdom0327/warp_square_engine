@@ -5,7 +5,7 @@ jobs:
     name: Build ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -13,6 +13,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v1
+        with:
+          version: "11"
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
