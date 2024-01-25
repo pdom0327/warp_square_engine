@@ -17,7 +17,6 @@ jobs:
         with:
           toolchain: stable
       - name: Cargo Build
-        shell: pwsh
         working-directory: ./java
         run: cargo build --release
       - name: Upload Build Artifact
