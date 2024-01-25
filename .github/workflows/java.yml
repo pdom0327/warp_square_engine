@@ -10,16 +10,14 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - uses: crazy-max/ghaction-chocolatey@v3
+      - uses: actions-rs/toolchain@v1
         with:
-            args: install rust
-      - uses: crazy-max/ghaction-chocolatey@v3
+          toolchain: stable
+      - uses: actions-rs/cargo@v1
         with:
-            args: install llvm
-      - name: Cargo Build
-        shell: pwsh
-        working-directory: ./java
-        run: cargo build --release
+          command: build
+          args: --release
+          working-directory: ./java
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
