@@ -17,6 +17,9 @@ jobs:
         uses: KyleMayes/install-llvm-action@v1
         with:
           version: "11"
+      - name: Install Xcode Select
+        run: xcode-select --install
+        if: matrix.os == 'macos-latest'
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
